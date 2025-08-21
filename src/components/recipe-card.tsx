@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, Clock, User } from "lucide-react";
 
 interface RecipeCardProps {
@@ -11,9 +12,12 @@ interface RecipeCardProps {
   imagePath?: string | null;
   likeCount: number;
   authorName: string;
+  authorUsername?: string;
+  authorAvatar?: string | null;
   categories: Array<{ name: string; slug: string }>;
   isLiked?: boolean;
   onLikeToggle?: () => void;
+  onOpenModal?: () => void;
   disableNavigation?: boolean;
 }
 
@@ -24,9 +28,12 @@ export function RecipeCard({
   imagePath,
   likeCount,
   authorName,
+  authorUsername,
+  authorAvatar,
   categories,
   isLiked = false,
   onLikeToggle,
+  onOpenModal,
   disableNavigation = false,
 }: RecipeCardProps) {
   return (
@@ -50,7 +57,10 @@ export function RecipeCard({
           </div>
         </CardHeader>
       ) : (
-        <Link href={`/r/${slug}`}>
+        <button
+          onClick={onOpenModal}
+          className="w-full text-left p-0"
+        >
           <CardHeader className="p-0">
             <div className="relative aspect-[4/3] bg-muted">
               {imagePath ? (
@@ -68,7 +78,7 @@ export function RecipeCard({
               )}
             </div>
           </CardHeader>
-        </Link>
+        </button>
       )}
 
       <CardContent className="p-4">
@@ -77,11 +87,14 @@ export function RecipeCard({
             {title}
           </h3>
         ) : (
-          <Link href={`/r/${slug}`}>
-            <h3 className="font-semibold text-lg mb-2 hover:text-primary transition-colors line-clamp-2">
+          <button
+            onClick={onOpenModal}
+            className="w-full text-left"
+          >
+            <h3 className="font-semibold text-lg mb-2 hover:text-primary transition-colors line-clamp-2 cursor-pointer">
               {title}
             </h3>
-          </Link>
+          </button>
         )}
 
         {summary && (
@@ -91,8 +104,23 @@ export function RecipeCard({
         )}
 
         <div className="flex items-center text-sm text-muted-foreground mb-3">
-          <User className="h-4 w-4 mr-1" />
-          <span>{authorName}</span>
+          <Avatar className="h-5 w-5 mr-2">
+            <AvatarImage src={authorAvatar || undefined} />
+            <AvatarFallback className="text-xs">
+              {authorName?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          {authorUsername ? (
+            <Link
+              href={`/u/${authorUsername}`}
+              className="hover:text-primary transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {authorName}
+            </Link>
+          ) : (
+            <span>{authorName}</span>
+          )}
         </div>
 
         {categories.length > 0 && (
@@ -113,7 +141,10 @@ export function RecipeCard({
 
       <CardFooter className="p-4 pt-0 flex items-center justify-between">
         <button
-          onClick={onLikeToggle}
+          onClick={(e) => {
+            e.stopPropagation();
+            onLikeToggle?.();
+          }}
           className={`flex items-center space-x-1 transition-colors ${isLiked
             ? 'text-red-500 hover:text-red-600'
             : 'text-muted-foreground hover:text-foreground'

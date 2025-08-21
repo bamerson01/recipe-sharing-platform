@@ -42,12 +42,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Handle auth state changes
         if (event === 'SIGNED_IN' && session?.user) {
-          // Redirect to profile or dashboard after successful sign in
-          router.push('/profile');
+          // Only redirect if we're on an auth page
+          const currentPath = window.location.pathname;
+          if (currentPath === '/auth') {
+            router.push('/profile');
+          }
         } else if (event === 'SIGNED_OUT') {
           // Redirect to home page after sign out
           router.push('/');
         }
+        // Ignore TOKEN_REFRESH and other events to prevent unwanted redirects
       }
     );
 

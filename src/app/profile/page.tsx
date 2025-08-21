@@ -53,7 +53,7 @@ function ProfileContent() {
         <Card className="mb-8">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <Avatar className="h-24 w-24">
+              <Avatar className="h-24 w-24" tabIndex={-1}>
                 <AvatarImage src={profile?.avatar_key ? getStorageUrl(profile.avatar_key) : user?.user_metadata?.avatar_url} />
                 <AvatarFallback className="text-2xl">
                   {profile?.display_name?.[0]?.toUpperCase() || user?.email?.charAt(0).toUpperCase()}

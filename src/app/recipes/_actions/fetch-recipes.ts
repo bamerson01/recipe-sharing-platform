@@ -83,7 +83,8 @@ export async function fetchUserRecipes(userId: string) {
         author:profiles!inner(
           id,
           display_name,
-          username
+          username,
+          avatar_key
         )
       `)
       .eq('author_id', userId)
@@ -163,7 +164,8 @@ export async function fetchRecipeBySlug(slug: string, userId?: string) {
         author:profiles!inner(
           id,
           display_name,
-          username
+          username,
+          avatar_key
         )
       `)
       .eq('slug', slug)
@@ -255,7 +257,8 @@ export async function fetchPublicRecipes(limit = 20, offset = 0) {
         author:profiles!inner(
           id,
           display_name,
-          username
+          username,
+          avatar_key
         )
       `)
       .eq('is_public', true)
@@ -337,7 +340,8 @@ export async function fetchRecipeById(recipeId: number, userId?: string) {
         author:profiles!inner(
           id,
           display_name,
-          username
+          username,
+          avatar_key
         )
       `)
       .eq('id', recipeId)

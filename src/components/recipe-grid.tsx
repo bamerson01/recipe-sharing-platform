@@ -75,9 +75,12 @@ export function RecipeGrid() {
               imagePath={recipe.cover_image_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}` : undefined}
               likeCount={recipe.like_count}
               authorName={recipe.author.display_name || 'Anonymous'}
+              authorUsername={recipe.author.username}
+              authorAvatar={recipe.author.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}` : undefined}
               categories={recipe.categories}
               isLiked={recipe.isLiked}
               onLikeToggle={() => handleLikeToggle(recipe.slug)}
+              onOpenModal={() => handleViewRecipe(recipe)}
               disableNavigation={true}
             />
           </div>

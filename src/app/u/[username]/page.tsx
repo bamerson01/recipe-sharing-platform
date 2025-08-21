@@ -9,15 +9,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChefHat, Heart, Calendar, Loader2 } from "lucide-react";
 import { RecipeCard } from "@/components/recipe-card";
+import { RecipeDetailModal } from "@/components/recipe-detail-modal";
 import { fetchUserRecipes } from "@/app/recipes/_actions/fetch-recipes";
 import { fetchUserLikedRecipes } from "@/app/recipes/_actions/fetch-recipes";
 import { fetchUserProfile } from "@/app/recipes/_actions/fetch-recipes";
+import { getStorageUrl } from "@/lib/storage-utils";
 
 interface UserProfile {
   id: string;
   username: string | null;
   display_name: string | null;
-  avatar_url: string | null;
+  avatar_key: string | null;
   created_at: string;
 }
 
@@ -30,6 +32,12 @@ interface Recipe {
   like_count: number;
   is_public: boolean;
   created_at: string;
+  author?: {
+    id: string;
+    display_name: string | null;
+    username: string | null;
+    avatar_key?: string | null;
+  };
   categories: Array<{ id: number; name: string; slug: string }>;
 }
 
@@ -41,6 +49,8 @@ export default function UserProfilePage() {
   const [likedRecipes, setLikedRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("recipes");
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -74,6 +84,16 @@ export default function UserProfilePage() {
     loadUserData();
   }, [username]);
 
+  const handleViewRecipe = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedRecipe(null);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -101,8 +121,8 @@ export default function UserProfilePage() {
       <Card className="mb-8">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={profile.avatar_url || undefined} />
+            <Avatar className="h-24 w-24" tabIndex={-1}>
+              <AvatarImage src={profile.avatar_key ? getStorageUrl(profile.avatar_key) : undefined} />
               <AvatarFallback className="text-2xl">
                 {profile.display_name?.charAt(0).toUpperCase() || profile.username?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
@@ -170,8 +190,10 @@ export default function UserProfilePage() {
                   imagePath={recipe.cover_image_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}` : undefined}
                   likeCount={recipe.like_count}
                   authorName={profile.display_name || profile.username || 'Anonymous'}
+                  authorUsername={profile.username}
+                  authorAvatar={profile.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${profile.avatar_key}` : undefined}
                   categories={recipe.categories}
-                  disableNavigation={true}
+                  onOpenModal={() => handleViewRecipe(recipe)}
                 />
               ))}
             </div>
@@ -201,14 +223,24 @@ export default function UserProfilePage() {
                   imagePath={recipe.cover_image_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}` : undefined}
                   likeCount={recipe.like_count}
                   authorName={recipe.author?.display_name || recipe.author?.username || 'Anonymous'}
+                  authorUsername={recipe.author?.username}
+                  authorAvatar={recipe.author?.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}` : undefined}
                   categories={recipe.categories}
-                  disableNavigation={true}
+                  onOpenModal={() => handleViewRecipe(recipe)}
                 />
               ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Recipe Detail Modal */}
+      <RecipeDetailModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        recipe={selectedRecipe}
+        isOwner={false}
+      />
     </div>
   );
 }

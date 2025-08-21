@@ -4,6 +4,7 @@ import { fetchRecipeBySlug } from '@/app/recipes/_actions/fetch-recipes';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, Share2, ChefHat, Clock, User } from 'lucide-react';
 import Image from 'next/image';
 
@@ -34,7 +35,12 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             )}
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={recipe.author.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}` : undefined} />
+                  <AvatarFallback className="text-xs">
+                    {recipe.author.display_name?.[0]?.toUpperCase() || recipe.author.username?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
                 <Link
                   href={`/u/${recipe.author.username || recipe.author.id}`}
                   className="hover:text-primary transition-colors cursor-pointer"

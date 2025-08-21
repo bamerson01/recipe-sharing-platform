@@ -284,7 +284,10 @@ function MyRecipesDashboard() {
           {filteredRecipes.map((recipe) => (
             <Card key={recipe.id} className="overflow-hidden">
               {/* Recipe Image */}
-              <div className="aspect-[4/3] bg-muted relative">
+              <div
+                className="aspect-[4/3] bg-muted relative cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => handleViewRecipe(recipe)}
+              >
                 {recipe.cover_image_key ? (
                   <img
                     src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}`}
@@ -302,6 +305,13 @@ function MyRecipesDashboard() {
                   <Badge variant={recipe.is_public ? "default" : "secondary"}>
                     {recipe.is_public ? "Public" : "Draft"}
                   </Badge>
+                </div>
+
+                {/* Click to View Overlay */}
+                <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+                  <div className="bg-white/90 rounded-full p-2">
+                    <Eye className="h-5 w-5 text-gray-700" />
+                  </div>
                 </div>
               </div>
 

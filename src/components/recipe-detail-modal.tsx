@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, Share2, ChefHat, Clock, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,6 +26,7 @@ interface RecipeDetailModalProps {
       id: string;
       display_name: string | null;
       username: string | null;
+      avatar_key?: string | null;
     };
     ingredients: Array<{
       id: number;
@@ -74,15 +76,23 @@ export function RecipeDetailModal({
           {/* Header Info */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <Link
-                  href={`/u/${recipe.author?.username || recipe.author?.id || 'anonymous'}`}
-                  className="hover:text-primary transition-colors cursor-pointer"
-                >
-                  {recipe.author?.display_name || recipe.author?.username || 'Anonymous'}
-                </Link>
-              </div>
+              {/* Only show author info if not the owner */}
+              {!isOwner && (
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={recipe.author?.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}` : undefined} />
+                    <AvatarFallback className="text-xs">
+                      {recipe.author?.display_name?.[0]?.toUpperCase() || recipe.author?.username?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Link
+                    href={`/u/${recipe.author?.username || recipe.author?.id || 'anonymous'}`}
+                    className="hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {recipe.author?.display_name || recipe.author?.username || 'Anonymous'}
+                  </Link>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
@@ -207,10 +217,10 @@ export function RecipeDetailModal({
               </Button>
             </div>
 
-            {/* View Full Page Link */}
+            {/* View Full Recipe Link */}
             <Link href={`/r/${recipe.slug}`}>
               <Button variant="outline" size="sm">
-                View Full Page
+                View Full Recipe
               </Button>
             </Link>
           </div>

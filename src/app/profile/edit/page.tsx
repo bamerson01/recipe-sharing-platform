@@ -383,6 +383,8 @@ export default function EditProfilePage() {
                     accept="image/*"
                     onChange={handleAvatarChange}
                     className="hidden"
+                    tabIndex={-1}
+                    autoFocus={false}
                   />
                   <Button
                     type="button"
