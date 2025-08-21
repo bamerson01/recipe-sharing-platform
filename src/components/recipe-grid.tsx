@@ -1,96 +1,59 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { RecipeCard } from "@/components/recipe-card";
-
-// Mock data for now - will be replaced with real API calls
-const mockRecipes = [
-  {
-    slug: "classic-chocolate-chip-cookies",
-    title: "Classic Chocolate Chip Cookies",
-    summary: "The perfect chocolate chip cookie - crispy on the outside, chewy on the inside.",
-    imagePath: "/api/placeholder/400/300",
-    likeCount: 127,
-    authorName: "Sarah Baker",
-    categories: [
-      { name: "Dessert", slug: "dessert" },
-      { name: "Quick", slug: "quick" }
-    ],
-    isLiked: false,
-  },
-  {
-    slug: "vegan-buddha-bowl",
-    title: "Vegan Buddha Bowl",
-    summary: "A colorful and nutritious bowl packed with quinoa, roasted vegetables, and tahini dressing.",
-    imagePath: "/api/placeholder/400/300",
-    likeCount: 89,
-    authorName: "Mike Chen",
-    categories: [
-      { name: "Vegan", slug: "vegan" },
-      { name: "Lunch", slug: "lunch" }
-    ],
-    isLiked: true,
-  },
-  {
-    slug: "one-pot-chicken-pasta",
-    title: "One-Pot Chicken Pasta",
-    summary: "A simple and delicious pasta dish that cooks in one pot for easy cleanup.",
-    imagePath: "/api/placeholder/400/300",
-    likeCount: 156,
-    authorName: "Emma Wilson",
-    categories: [
-      { name: "Dinner", slug: "dinner" },
-      { name: "One-Pot", slug: "one-pot" }
-    ],
-    isLiked: false,
-  },
-  {
-    slug: "blueberry-pancakes",
-    title: "Fluffy Blueberry Pancakes",
-    summary: "Light and fluffy pancakes bursting with fresh blueberries and maple syrup.",
-    imagePath: "/api/placeholder/400/300",
-    likeCount: 203,
-    authorName: "David Johnson",
-    categories: [
-      { name: "Breakfast", slug: "breakfast" },
-      { name: "Quick", slug: "quick" }
-    ],
-    isLiked: false,
-  },
-  {
-    slug: "slow-cooker-beef-stew",
-    title: "Slow Cooker Beef Stew",
-    summary: "Tender beef stew with vegetables that cooks all day for maximum flavor.",
-    imagePath: "/api/placeholder/400/300",
-    likeCount: 94,
-    authorName: "Lisa Rodriguez",
-    categories: [
-      { name: "Dinner", slug: "dinner" },
-      { name: "Slow Cooker", slug: "slow-cooker" }
-    ],
-    isLiked: false,
-  },
-  {
-    slug: "chocolate-avocado-mousse",
-    title: "Chocolate Avocado Mousse",
-    summary: "Rich and creamy chocolate mousse made with avocado for a healthy twist.",
-    imagePath: "/api/placeholder/400/300",
-    likeCount: 67,
-    authorName: "Alex Thompson",
-    categories: [
-      { name: "Dessert", slug: "dessert" },
-      { name: "Vegan", slug: "vegan" }
-    ],
-    isLiked: false,
-  },
-];
+import { RecipeDetailModal } from "@/components/recipe-detail-modal";
+import { fetchPublicRecipes } from "@/app/recipes/_actions/fetch-recipes";
 
 export function RecipeGrid() {
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fetch public recipes
+  useEffect(() => {
+    const loadRecipes = async () => {
+      try {
+        const result = await fetchPublicRecipes();
+        if (result.ok) {
+          setRecipes(result.recipes);
+        }
+      } catch (error) {
+        console.error('Error loading recipes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRecipes();
+  }, []);
+
   const handleLikeToggle = (recipeSlug: string) => {
     // TODO: Implement like toggle functionality
     console.log(`Toggle like for recipe ${recipeSlug}`);
   };
 
-  if (mockRecipes.length === 0) {
+  const handleViewRecipe = (recipe: any) => {
+    setSelectedRecipe(recipe);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedRecipe(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading recipes...</p>
+      </div>
+    );
+  }
+
+  if (recipes.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground text-lg">
@@ -101,14 +64,33 @@ export function RecipeGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {mockRecipes.map((recipe) => (
-        <RecipeCard
-          key={recipe.slug}
-          {...recipe}
-          onLikeToggle={() => handleLikeToggle(recipe.slug)}
-        />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {recipes.map((recipe) => (
+          <div key={recipe.slug} onClick={() => handleViewRecipe(recipe)} className="cursor-pointer">
+            <RecipeCard
+              slug={recipe.slug}
+              title={recipe.title}
+              summary={recipe.summary}
+              imagePath={recipe.cover_image_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}` : undefined}
+              likeCount={recipe.like_count}
+              authorName={recipe.author.display_name || 'Anonymous'}
+              categories={recipe.categories}
+              isLiked={recipe.isLiked}
+              onLikeToggle={() => handleLikeToggle(recipe.slug)}
+              disableNavigation={true}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Recipe Detail Modal */}
+      <RecipeDetailModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        recipe={selectedRecipe}
+        isOwner={false}
+      />
+    </>
   );
 }

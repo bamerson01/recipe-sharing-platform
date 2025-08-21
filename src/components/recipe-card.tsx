@@ -14,6 +14,7 @@ interface RecipeCardProps {
   categories: Array<{ name: string; slug: string }>;
   isLiked?: boolean;
   onLikeToggle?: () => void;
+  disableNavigation?: boolean;
 }
 
 export function RecipeCard({
@@ -26,10 +27,11 @@ export function RecipeCard({
   categories,
   isLiked = false,
   onLikeToggle,
+  disableNavigation = false,
 }: RecipeCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <Link href={`/r/${slug}`}>
+      {disableNavigation ? (
         <CardHeader className="p-0">
           <div className="relative aspect-[4/3] bg-muted">
             {imagePath ? (
@@ -47,14 +49,40 @@ export function RecipeCard({
             )}
           </div>
         </CardHeader>
-      </Link>
+      ) : (
+        <Link href={`/r/${slug}`}>
+          <CardHeader className="p-0">
+            <div className="relative aspect-[4/3] bg-muted">
+              {imagePath ? (
+                <Image
+                  src={imagePath}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <span>No image</span>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+        </Link>
+      )}
 
       <CardContent className="p-4">
-        <Link href={`/r/${slug}`}>
-          <h3 className="font-semibold text-lg mb-2 hover:text-primary transition-colors line-clamp-2">
+        {disableNavigation ? (
+          <h3 className="font-semibold text-lg mb-2 line-clamp-2">
             {title}
           </h3>
-        </Link>
+        ) : (
+          <Link href={`/r/${slug}`}>
+            <h3 className="font-semibold text-lg mb-2 hover:text-primary transition-colors line-clamp-2">
+              {title}
+            </h3>
+          </Link>
+        )}
 
         {summary && (
           <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
@@ -87,8 +115,8 @@ export function RecipeCard({
         <button
           onClick={onLikeToggle}
           className={`flex items-center space-x-1 transition-colors ${isLiked
-              ? 'text-red-500 hover:text-red-600'
-              : 'text-muted-foreground hover:text-foreground'
+            ? 'text-red-500 hover:text-red-600'
+            : 'text-muted-foreground hover:text-foreground'
             }`}
         >
           <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />

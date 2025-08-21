@@ -1,28 +1,32 @@
-# Cursor Project Rules — RecipeNest (Next.js + Supabase)
+Cursor Project Rules — RecipeNest (Next.js + Supabase)
 
-> You are an expert in **TypeScript, Next.js App Router (v14+), React, Supabase (Auth/Postgres/Storage/RLS), TailwindCSS, and shadcn/ui**. You build secure, accessible, high‑quality web apps with minimal client-side state and clean server boundaries.
+You are an expert in TypeScript, Next.js App Router (v14+), React, Supabase (Auth/Postgres/Storage/RLS), TailwindCSS, and shadcn/ui. You build secure, accessible, high-quality web apps with minimal client-side state and clean server boundaries.
 
-## Mission & Scope
+Mission & Scope
 
-* Build **RecipeNest**: a social recipe CRUD app with auth, image uploads, likes, search, and category filters.
-* Ship a production-ready MVP deployed on **Vercel**, backed by **Supabase**.
-* Follow the **PRD** in this repo. If something is unclear, make the safest assumption and proceed.
+Build RecipeNest: a social recipe CRUD app with auth, image uploads, likes, search, and category filters.
 
----
+Ship a production-ready MVP deployed on Vercel, backed by Supabase.
 
-## Code Style & Structure
+Follow the PRD in this repo. If something is unclear, make the safest assumption and proceed.
 
-* Write **concise, modular TypeScript**. No classes. Prefer small pure functions.
-* **Strict TypeScript**: no `any`/`unknown` unless unavoidable; no type assertions if you can infer.
-* Use **descriptive names** (e.g., `isLoading`, `hasError`, `handleSubmit`).
-* Favor **early returns** and **guard clauses**. Keep control flow shallow.
-* **Do not duplicate logic**; factor reusable utilities.
-* Document exported functions/components with brief **TSDoc/JSDoc** when intent isn’t obvious.
-* Formatting: **Prettier** + ESLint/biome; keep imports sorted; remove dead code.
+Code Style & Structure
 
-### Directory Conventions
+Write concise, modular TypeScript. No classes. Prefer small pure functions.
 
-```
+Strict TypeScript: no any/unknown unless unavoidable; no type assertions if you can infer.
+
+Use descriptive names (e.g., isLoading, hasError, handleSubmit).
+
+Favor early returns and guard clauses. Keep control flow shallow.
+
+Do not duplicate logic; factor reusable utilities.
+
+Document exported functions/components with brief TSDoc/JSDoc when intent isn’t obvious.
+
+Formatting: Prettier + ESLint/biome; keep imports sorted; remove dead code.
+
+Directory Conventions
 app/                   # Next.js App Router
   (marketing)/         # Landing/public pages
   (app)/               # Auth'd app routes (protected)
@@ -38,150 +42,170 @@ styles/                # globals.css (Tailwind base)
 types/                 # shared interfaces
 scripts/               # seed/migration helpers (server-only)
 public/                # static assets
-```
 
-* **Named exports** for components/utilities.
-* **Lowercase-dash** for directories (e.g., `recipe-card`).
-* Keep files ≤ \~200–300 LOC; split into subcomponents.
 
----
+Named exports for components/utilities.
 
-## React, UI & Styling
+Lowercase-dash for directories (e.g., recipe-card).
 
-* Use **shadcn/ui** + **Tailwind**. No custom CSS files unless absolutely needed.
-* Use **server components by default**. Mark client components with `"use client"` only when needed (forms, event handlers).
-* Co-locate small **client subcomponents** inside the page/component directory when they are only used there.
-* Conditional classes via a `cn()` helper (clsx/tailwind-merge). No string concatenation.
-* **Accessibility**: label form controls, use semantic HTML, keyboard focus states, `aria-*` where appropriate. All interactive elements must be reachable by keyboard.
-* Support **dark mode** via Tailwind.
+Keep files ≤ ~200–300 LOC; split into subcomponents.
 
-### Forms & Validation
+React, UI & Styling
 
-* Use **react-hook-form + zodResolver** with **zod** schemas from `lib/validation`.
-* Display inline errors, disable submit while pending, optimistic updates only where safe (e.g., likes).
+Use shadcn/ui + Tailwind. No custom CSS files unless absolutely needed.
 
----
+Use server components by default. Mark client components with "use client" only when needed (forms, event handlers).
 
-## Supabase (Auth, DB, Storage)
+Co-locate small client subcomponents inside the page/component directory when they are only used there.
 
-* Use `@supabase/supabase-js` and **SSR** helpers. Create **server** client only in server contexts (route handlers, server actions, RSC).
-* **Never expose** the **service role key** to the client. Use it only in scripts/migrations or secure server code.
-* Respect **RLS policies**. Assume the database enforces access; do not bypass with service role in runtime web requests.
-* Schema source of truth is `scripts/sql/schema.sql`. Mutations to schema go through SQL migrations.
-* Storage bucket: `recipe-images`. Public read; writes restricted to authenticated users.
+Conditional classes via a cn() helper (clsx/tailwind-merge). No string concatenation.
 
-### Server/Client Boundaries
+Accessibility: label form controls, use semantic HTML, keyboard focus states, aria-* where appropriate. All interactive elements must be reachable by keyboard.
 
-* **Data fetching/mutations**:
+Support dark mode via Tailwind.
 
-  * Use **Server Actions** or **route handlers** for writes.
-  * Use **RSC**/server for reads, stream results to clients.
-* **Do not** initialize Supabase client in global client-side providers for data fetching.
+Forms & Validation
 
-### Likes & Concurrency
+Use react-hook-form + zodResolver with zod schemas from lib/validation.
 
-* Enforce one-like-per-user-per-recipe with a **unique DB constraint**.
-* Update like counts via **DB trigger**; do not trust client increments.
-* UI uses **optimistic toggle** but reconciles on failure.
+Display inline errors, disable submit while pending, optimistic updates only where safe (e.g., likes).
 
----
+Supabase (Auth, DB, Storage)
 
-## Data & Search
+Use @supabase/supabase-js and SSR helpers. Create server client only in server contexts (route handlers, server actions, RSC).
 
-* Use Postgres **tsvector + GIN** for keyword search over `title` + `summary`.
-* Category filter via join table; prefer **server-side filtering**.
-* Pagination: cursor-based on `created_at`/`id`.
+Never expose the service role key to the client. Use it only in scripts/migrations or secure server code.
 
----
+Respect RLS policies. Assume the database enforces access; do not bypass with service role in runtime web requests.
 
-## API Design
+Schema source of truth is scripts/sql/schema.sql. Mutations to schema go through SQL migrations.
 
-* Route handlers under `app/api/*` are **server-only** and must validate input with **zod**.
-* Return typed JSON (`as const` where appropriate). Handle and log errors; do not leak stack traces to clients.
-* Prefer **Server Actions** for form posts when feasible.
+Storage bucket: recipe-images. Public read; writes restricted to authenticated users.
 
----
+Server/Client Boundaries
 
-## Security & Privacy
+Data fetching/mutations:
 
-* RLS enabled on all tables; policies match PRD. Test with anon vs auth sessions.
-* Sanitize/validate all user input. **Never** trust client data.
-* Do not log secrets or PII. Centralize logging utilities.
-* CSRF: Server Actions/Next forms are preferred; if using fetch, include proper auth context.
-* Content Security Policy: rely on Next.js defaults; avoid `dangerouslySetInnerHTML`.
+Use Server Actions or route handlers for writes.
 
----
+Use RSC/server for reads, stream results to clients.
 
-## Performance
+Do not initialize Supabase client in global client-side providers for data fetching.
 
-* Optimize Web Vitals (**LCP/CLS**):
+Likes & Concurrency
 
-  * Use `next/image` with width/height and responsive sizes.
-  * Stream server components; suspense client boundaries.
-  * Avoid unnecessary client state; prefer derived props.
-* Database: use indexed queries; avoid N+1 by batching child fetches.
+Enforce one-like-per-user-per-recipe with a unique DB constraint.
 
----
+Update like counts via DB trigger; do not trust client increments.
 
-## Error Handling & Observability
+UI uses optimistic toggle but reconciles on failure.
 
-* Validate early with zod and **return typed errors**.
-* Use **error boundaries** for client islands.
-* Optional: integrate Sentry/Logtail. In errors, show friendly messages.
+Data & Search
 
----
+Use Postgres tsvector + GIN for keyword search over title + summary.
 
-## Testing
+Category filter via join table; prefer server-side filtering.
 
-* **Vitest** for unit tests.
-* **@testing-library/react** for component tests (client parts).
-* **Playwright** for critical e2e (auth, create recipe, like flow, search).
-* Seed ephemeral test data via Supabase SQL scripts.
+Pagination: cursor-based on created_at/id.
 
----
+API Design
 
-## Environment & Secrets
+Route handlers under app/api/* are server-only and must validate input with zod.
 
-* Required env vars:
+Return typed JSON (as const where appropriate). Handle and log errors; do not leak stack traces to clients.
 
-  * `NEXT_PUBLIC_SUPABASE_URL`
-  * `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-  * `SUPABASE_SERVICE_ROLE_KEY` (server-only)
-  * `NEXT_PUBLIC_SITE_URL`
-* Configure allowed redirect URLs in Supabase Auth to Vercel preview + prod.
-* **Never** access server-only env vars in client code.
+Prefer Server Actions for form posts when feasible.
 
----
+Security & Privacy
 
-## Git & Reviews
+RLS enabled on all tables; policies match PRD. Test with anon vs auth sessions.
 
-* Small PRs with clear titles (type/scope): `feat(recipes): create editor form`.
-* Checklist per PR:
+Sanitize/validate all user input. Never trust client data.
 
-  * [ ] Types strict, no `any`
-  * [ ] RSC by default; client only where needed
-  * [ ] Inputs validated with zod
-  * [ ] RLS respected (tested anon vs auth)
-  * [ ] a11y labels and focus states
-  * [ ] Lighthouse ≥ 90 on key pages
+Do not log secrets or PII. Centralize logging utilities.
 
----
+CSRF: Server Actions/Next forms are preferred; if using fetch, include proper auth context.
 
-## Output Expectations (when AI generates code)
+Content Security Policy: rely on Next.js defaults; avoid dangerouslySetInnerHTML.
 
-* Provide **complete, runnable** files with correct imports and exports.
-* Include **types** and **zod schemas** for inputs.
-* Use **Tailwind** for all styling; **shadcn/ui** components where suitable.
-* Include **loading** and **empty** states.
-* No placeholders or TODOs. If something is not implementable, state it clearly.
+Performance
 
----
+Optimize Web Vitals (LCP/CLS):
 
-## Patterns & Snippets
+Use next/image with width/height and responsive sizes.
 
-### Supabase Server Client (RSC / Server Action)
+Stream server components; suspense client boundaries.
 
-```ts
+Avoid unnecessary client state; prefer derived props.
+
+Database: use indexed queries; avoid N+1 by batching child fetches.
+
+Error Handling & Observability
+
+Validate early with zod and return typed errors.
+
+Use error boundaries for client islands.
+
+Optional: integrate Sentry/Logtail. In errors, show friendly messages.
+
+Testing
+
+Vitest for unit tests.
+
+@testing-library/react for component tests (client parts).
+
+Playwright for critical e2e (auth, create recipe, like flow, search).
+
+Seed ephemeral test data via Supabase SQL scripts.
+
+Environment & Secrets
+
+Required env vars:
+
+NEXT_PUBLIC_SUPABASE_URL
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+SUPABASE_SERVICE_ROLE_KEY (server-only)
+
+NEXT_PUBLIC_SITE_URL
+
+Configure allowed redirect URLs in Supabase Auth to Vercel preview + prod.
+
+Never access server-only env vars in client code.
+
+Git & Reviews
+
+Small PRs with clear titles (type/scope): feat(recipes): create editor form.
+
+Checklist per PR:
+
+ Types strict, no any
+
+ RSC by default; client only where needed
+
+ Inputs validated with zod
+
+ RLS respected (tested anon vs auth)
+
+ a11y labels and focus states
+
+ Lighthouse ≥ 90 on key pages
+
+Output Expectations (when AI generates code)
+
+Provide complete, runnable files with correct imports and exports.
+
+Include types and zod schemas for inputs.
+
+Use Tailwind for all styling; shadcn/ui components where suitable.
+
+Include loading and empty states.
+
+No placeholders or TODOs. If something is not implementable, state it clearly.
+
+Patterns & Snippets
+Supabase Server Client (RSC / Server Action)
 // lib/db/server.ts
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
@@ -199,11 +223,8 @@ export function getServerSupabase() {
     }
   );
 }
-```
 
-### Server Action Example
-
-```ts
+Server Action Example
 // app/(app)/recipes/_actions/create-recipe.ts
 'use server';
 import { z } from 'zod';
@@ -238,37 +259,77 @@ export async function createRecipe(formData: FormData) {
   revalidatePath('/my');
   return { ok: true } as const;
 }
-```
 
-### cn() Utility
-
-```ts
+cn() Utility
 // lib/utils/cn.ts
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: unknown[]) {
   return twMerge(clsx(inputs));
 }
-```
 
----
+Prohibited / Caution
 
-## Prohibited / Caution
+No service role key in any runtime that can be requested by the browser.
 
-* No service role key in any runtime that can be requested by the browser.
-* No schema changes outside migration scripts.
-* No global client-side data fetching via Supabase for protected data.
-* Use `dangerouslySetInnerHTML` only with escaped/sanitized content (prefer not at all).
+No schema changes outside migration scripts.
 
----
+No global client-side data fetching via Supabase for protected data.
 
-## Runbook
+Use dangerouslySetInnerHTML only with escaped/sanitized content (prefer not at all).
 
-* `pnpm dev` → local dev
-* `pnpm lint` / `pnpm typecheck` / `pnpm test`
-* `pnpm db:push` → run SQL migration scripts
-* Vercel: set env vars; connect Git; preview deploys per PR
+Runbook
 
----
+pnpm dev → local dev
 
-**End of Cursor Rules**
+pnpm lint / pnpm typecheck / pnpm test
+
+pnpm db:push → run SQL migration scripts
+
+Vercel: set env vars; connect Git; preview deploys per PR
+
+Work Completed log
+
+Always update summary_work_completed.md at the repo root for any major feature, significant fix, architecture decision, or phase change.
+
+Purpose
+
+Context Preservation – never lose track of what we’ve built
+
+Progress Tracking – clear view of completed vs pending
+
+Technical Reference – key files, components, and decisions
+
+Issue Resolution – documented fixes
+
+Future Planning – cues for upcoming phases
+
+How to log (concise + required)
+
+Prepend a new entry (latest at top).
+
+Use the template below and always include PRD variance notes:
+
+NEW FEATURE — if you added anything not in RecipeNest_PRD.md (1–3 sentence description).
+
+CHANGED FEATURE — if you modified something listed in RecipeNest_PRD.md (brief before/after + rationale and PRD section reference).
+
+Template
+
+## YYYY-MM-DD HH:mm (America/Denver) — <Short Title>
+
+**Scope:** <feature|bugfix|refactor>
+**Files:** <relative paths>
+**Why:** <problem being solved>
+**What changed:**
+- <bulleted highlights>
+
+**Testing:** <manual/e2e/unit; env>
+**Impact:** <perf|SEO|DB schema|RLS|API|UX|None>
+
+### PRD Variance
+- NEW FEATURE: <name> — <1–3 sentence description>.
+- CHANGED FEATURE: <name> — PRD §<section>. Before: <brief>. After: <brief>. Rationale: <why>.
+
+
+End of Cursor Rules

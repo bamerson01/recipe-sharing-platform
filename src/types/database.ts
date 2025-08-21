@@ -51,7 +51,7 @@ export interface Database {
           title: string;
           slug: string;
           summary: string | null;
-          image_path: string | null;
+          cover_image_key: string | null;
           is_public: boolean;
           like_count: number;
           search_vector: string | null;
@@ -64,7 +64,7 @@ export interface Database {
           title: string;
           slug: string;
           summary?: string | null;
-          image_path?: string | null;
+          cover_image_key?: string | null;
           is_public?: boolean;
           like_count?: number;
           search_vector?: string | null;
@@ -77,7 +77,7 @@ export interface Database {
           title?: string;
           slug?: string;
           summary?: string | null;
-          image_path?: string | null;
+          cover_image_key?: string | null;
           is_public?: boolean;
           like_count?: number;
           search_vector?: string | null;

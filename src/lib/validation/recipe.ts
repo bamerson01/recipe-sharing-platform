@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const RecipeInput = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
   summary: z.string().optional(),
-  isPublic: z.boolean().default(false),
+  isPublic: z.boolean(),
   ingredients: z.array(z.object({
     text: z.string().min(1, 'Ingredient text is required'),
     position: z.number().int().min(0),

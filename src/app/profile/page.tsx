@@ -8,9 +8,43 @@ import { Badge } from "@/components/ui/badge";
 import { ChefHat, Edit, Settings, BookOpen, Heart } from "lucide-react";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/protected-route";
+import { useState, useEffect } from "react";
+import { getStorageUrl } from "@/lib/storage-utils";
 
 function ProfileContent() {
   const { user } = useAuth();
+  const [recipeCount, setRecipeCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+
+  // Fetch recipe count and profile data
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) return;
+
+      try {
+        // Fetch recipe count
+        const countResponse = await fetch('/api/recipes/count');
+        if (countResponse.ok) {
+          const countData = await countResponse.json();
+          setRecipeCount(countData.count);
+        }
+
+        // Fetch profile data
+        const profileResponse = await fetch('/api/profile');
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          setProfile(profileData.profile);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -20,14 +54,14 @@ function ProfileContent() {
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarImage src={profile?.avatar_key ? getStorageUrl(profile.avatar_key) : user?.user_metadata?.avatar_url} />
                 <AvatarFallback className="text-2xl">
-                  {user?.email?.charAt(0).toUpperCase()}
+                  {profile?.display_name?.[0]?.toUpperCase() || user?.email?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
             <CardTitle className="text-2xl">
-              {user?.user_metadata?.full_name || user?.email}
+              {profile?.display_name || user?.user_metadata?.full_name || user?.email}
             </CardTitle>
             <CardDescription>
               Member since {user ? new Date(user.created_at).toLocaleDateString() : ''}
@@ -35,11 +69,13 @@ function ProfileContent() {
           </CardHeader>
           <CardContent className="text-center">
             <div className="flex gap-2 justify-center">
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
-              <Button variant="outline" size="sm">
+              <Link href="/profile/edit">
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
+              </Link>
+              <Button variant="outline" size="sm" disabled>
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
@@ -51,7 +87,9 @@ function ProfileContent() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-primary">0</CardTitle>
+              <CardTitle className="text-3xl font-bold text-primary">
+                {loading ? '...' : recipeCount}
+              </CardTitle>
               <CardDescription>Recipes Created</CardDescription>
             </CardHeader>
             <CardContent className="text-center">

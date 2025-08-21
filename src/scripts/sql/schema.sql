@@ -6,7 +6,8 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text unique,
   display_name text,
-  avatar_url text,
+  bio text,
+  avatar_key text, -- Changed from avatar_url to avatar_key
   created_at timestamptz default now()
 );
 
@@ -23,7 +24,7 @@ create table if not exists public.recipes (
   title text not null,
   slug text unique not null,
   summary text,
-  image_path text,
+  cover_image_key text, -- Changed from image_path to cover_image_key
   is_public boolean default false,
   like_count int default 0,
   search_vector tsvector,
@@ -49,6 +50,33 @@ create table if not exists public.recipe_categories (
   recipe_id bigint references public.recipes(id) on delete cascade,
   category_id bigint references public.categories(id) on delete cascade,
   primary key (recipe_id, category_id)
+);
+
+-- Recipe images table (for additional gallery images)
+create table if not exists public.recipe_images (
+  id uuid primary key default gen_random_uuid(),
+  recipe_id bigint references public.recipes(id) on delete cascade,
+  image_key text not null,
+  uploaded_by uuid references public.profiles(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- Recipe comments table
+create table if not exists public.recipe_comments (
+  id uuid primary key default gen_random_uuid(),
+  recipe_id bigint references public.recipes(id) on delete cascade,
+  user_id uuid references public.profiles(id) on delete cascade,
+  body text not null,
+  created_at timestamptz default now()
+);
+
+-- Recipe comment images table
+create table if not exists public.recipe_comment_images (
+  id uuid primary key default gen_random_uuid(),
+  comment_id uuid references public.recipe_comments(id) on delete cascade,
+  image_key text not null,
+  uploaded_by uuid references public.profiles(id) on delete cascade,
+  created_at timestamptz default now()
 );
 
 create table if not exists public.likes (
@@ -110,6 +138,9 @@ alter table public.recipes enable row level security;
 alter table public.recipe_ingredients enable row level security;
 alter table public.recipe_steps enable row level security;
 alter table public.recipe_categories enable row level security;
+alter table public.recipe_images enable row level security;
+alter table public.recipe_comments enable row level security;
+alter table public.recipe_comment_images enable row level security;
 alter table public.likes enable row level security;
 
 -- RLS Policies
@@ -148,6 +179,42 @@ create policy steps_write on public.recipe_steps for all using (
   exists (select 1 from public.recipes r where r.id = recipe_id and r.author_id = auth.uid())
 ) with check (
   exists (select 1 from public.recipes r where r.id = recipe_id and r.author_id = auth.uid())
+);
+
+-- RECIPE IMAGES
+create policy recipe_images_read on public.recipe_images for select using (
+  exists (select 1 from public.recipes r where r.id = recipe_id and (r.is_public or r.author_id = auth.uid()))
+);
+create policy recipe_images_write on public.recipe_images for all using (
+  exists (select 1 from public.recipes r where r.id = recipe_id and r.author_id = auth.uid())
+) with check (
+  exists (select 1 from public.recipes r where r.id = recipe_id and r.author_id = auth.uid())
+);
+
+-- RECIPE COMMENTS
+create policy recipe_comments_read on public.recipe_comments for select using (
+  exists (select 1 from public.recipes r where r.id = recipe_id and (r.is_public or r.author_id = auth.uid()))
+);
+create policy recipe_comments_write on public.recipe_comments for all using (
+  exists (select 1 from public.recipes r where r.id = recipe_id and (r.is_public or r.author_id = auth.uid()))
+) with check (
+  exists (select 1 from public.recipes r where r.id = recipe_id and (r.is_public or r.author_id = auth.uid()))
+);
+
+-- RECIPE COMMENT IMAGES
+create policy recipe_comment_images_read on public.recipe_comment_images for select using (
+  exists (select 1 from public.recipe_comments rc 
+          join public.recipes r on rc.recipe_id = r.id 
+          where rc.id = comment_id and (r.is_public or r.author_id = auth.uid()))
+);
+create policy recipe_comment_images_write on public.recipe_comment_images for all using (
+  exists (select 1 from public.recipe_comments rc 
+          join public.recipes r on rc.recipe_id = r.id 
+          where rc.id = comment_id and (r.is_public or r.author_id = auth.uid()))
+) with check (
+  exists (select 1 from public.recipe_comments rc 
+          join public.recipes r on rc.recipe_id = r.id 
+          where rc.id = comment_id and (r.is_public or r.author_id = auth.uid()))
 );
 
 -- RECIPE_CATEGORIES

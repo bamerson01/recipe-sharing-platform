@@ -1,48 +1,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { RecipeInput, RecipeInputType } from "@/lib/validation/recipe";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChefHat, Plus, X, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Badge as BadgeUI } from "@/components/ui/badge";
+import { ImageIcon, Plus, X, ChefHat, Loader2 } from "lucide-react";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation";
-import { createRecipe } from "../_actions/create-recipe";
-import { fetchCategories, Category } from "../_actions/categories";
-import { RecipeInput, RecipeInputType } from "@/lib/validation/recipe";
+import { fetchRecipeById } from "../../_actions/fetch-recipes";
+import { updateRecipe } from "../../_actions/manage-recipes";
+import { fetchCategories, Category } from "../../_actions/categories";
 
 type RecipeFormData = RecipeInputType;
 
 interface Ingredient {
-  id: string;
+  id: number;
   text: string;
   position: number;
 }
 
 interface Step {
-  id: string;
+  id: number;
   text: string;
   position: number;
 }
 
-function NewRecipeForm() {
+function EditRecipeForm({ recipeId }: { recipeId: string }) {
   const { user } = useAuth();
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [recipe, setRecipe] = useState<any>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-
-  // Remove these state variables since we're using form data
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<RecipeFormData>({
     resolver: zodResolver(RecipeInput),
@@ -56,7 +56,36 @@ function NewRecipeForm() {
     },
   });
 
-  // Fetch categories on component mount
+  // Fetch recipe data and categories
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) return;
+
+      try {
+        const recipeResult = await fetchRecipeById(parseInt(recipeId), user.id);
+        if (recipeResult.ok) {
+          const recipeData = recipeResult.recipe;
+          setRecipe(recipeData);
+
+          // Set form values
+          form.setValue('title', recipeData.title);
+          form.setValue('summary', recipeData.summary || '');
+          form.setValue('isPublic', recipeData.is_public);
+          form.setValue('ingredients', recipeData.ingredients);
+          form.setValue('steps', recipeData.steps);
+          form.setValue('categoryIds', recipeData.categories.map(c => c.id));
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading recipe:', error);
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user, recipeId, form]);
+
+  // Fetch categories
   useEffect(() => {
     const loadCategories = async () => {
       const result = await fetchCategories();
@@ -84,8 +113,6 @@ function NewRecipeForm() {
     }
   };
 
-
-
   const addStep = () => {
     const currentSteps = form.getValues("steps") || [];
     const newSteps = [
@@ -103,8 +130,6 @@ function NewRecipeForm() {
     }
   };
 
-
-
   const toggleCategory = (categoryId: number) => {
     const currentCategories = form.getValues("categoryIds") || [];
     const newCategories = currentCategories.includes(categoryId)
@@ -117,8 +142,6 @@ function NewRecipeForm() {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -134,7 +157,6 @@ function NewRecipeForm() {
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    // Reset the file input
     const fileInput = document.getElementById('image-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -142,38 +164,14 @@ function NewRecipeForm() {
   };
 
   const onSubmit = async (data: RecipeFormData) => {
-    console.log('🚀 onSubmit called with data:', data);
-    console.log('📝 Raw form data:', {
-      title: data.title,
-      summary: data.summary,
-      isPublic: data.isPublic,
-      ingredients: data.ingredients,
-      steps: data.steps,
-      categoryIds: data.categoryIds
-    });
-    console.log('✅ Form is valid:', form.formState.isValid);
-    console.log('❌ Form errors:', form.formState.errors);
-    console.log('🔍 Form state details:', {
-      isDirty: form.formState.isDirty,
-      isSubmitting: form.formState.isSubmitting,
-      isValidating: form.formState.isValidating
-    });
-
-    if (!user) {
-      console.log('❌ No user found');
-      return;
-    }
+    if (!user) return;
 
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
-      // Validate ingredients and steps
       const validIngredients = data.ingredients.filter(ing => ing.text.trim());
       const validSteps = data.steps.filter(step => step.text.trim());
-
-      console.log('✅ Valid ingredients:', validIngredients);
-      console.log('✅ Valid steps:', validSteps);
 
       if (validIngredients.length === 0) {
         setSubmitError("At least one ingredient is required");
@@ -187,8 +185,8 @@ function NewRecipeForm() {
         return;
       }
 
-      // Create FormData for server action
       const formData = new FormData();
+      formData.append('id', recipeId);
       formData.append('title', data.title);
       formData.append('summary', data.summary || '');
       formData.append('isPublic', data.isPublic ? 'on' : 'off');
@@ -200,42 +198,48 @@ function NewRecipeForm() {
         formData.append('imageFile', imageFile);
       }
 
-      console.log('📤 Submitting form data:', {
-        title: data.title,
-        summary: data.summary,
-        isPublic: data.isPublic,
-        ingredients: validIngredients.length,
-        steps: validSteps.length,
-        categories: (data.categoryIds || []).length,
-        hasImage: !!imageFile
-      });
-
-      const result = await createRecipe(formData);
-      console.log('📥 Server response:', result);
-      if (result.errors) {
-        console.log('❌ Detailed server errors:', result.errors);
-      }
+      const result = await updateRecipe(formData);
 
       if (result.ok) {
-        // Redirect to My Recipes with success message
-        router.push('/recipes/my?success=created');
+        router.push('/recipes/my?success=updated');
       } else {
-        setSubmitError(result.message || 'Failed to create recipe');
+        setSubmitError(result.message || 'Failed to update recipe');
       }
     } catch (error) {
-      console.error('💥 Error creating recipe:', error);
+      console.error('Error updating recipe:', error);
       setSubmitError('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="text-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Loading recipe...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="text-center py-8">
+          <p className="text-destructive">Recipe not found</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Create New Recipe</h1>
+        <h1 className="text-3xl font-bold mb-2">Edit Recipe</h1>
         <p className="text-muted-foreground">
-          Share your culinary masterpiece with the world
+          Update your culinary masterpiece
         </p>
       </div>
 
@@ -248,7 +252,7 @@ function NewRecipeForm() {
               Basic Information
             </CardTitle>
             <CardDescription>
-              Start with the essential details about your recipe
+              Update the essential details about your recipe
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -307,7 +311,7 @@ function NewRecipeForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {categories.length === 0 ? (
+            {(form.watch("categoryIds") || []).length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-muted-foreground">Loading categories...</p>
               </div>
@@ -333,7 +337,7 @@ function NewRecipeForm() {
           <CardHeader>
             <CardTitle>Cover Image</CardTitle>
             <CardDescription>
-              Add a beautiful photo to showcase your recipe
+              Update the photo for your recipe
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -492,36 +496,15 @@ function NewRecipeForm() {
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            onClick={() => console.log('🔘 Submit button clicked')}
-          >
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Recipe...
+                Updating Recipe...
               </>
             ) : (
-              "Create Recipe"
+              "Update Recipe"
             )}
-          </Button>
-
-          {/* Debug button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              console.log('🔍 Form state:', form.formState);
-              console.log('📝 Form values:', form.getValues());
-              console.log('✅ Form is valid:', form.formState.isValid);
-              console.log('❌ Form errors:', form.formState.errors);
-              console.log('📋 Current ingredients in form:', form.getValues('ingredients'));
-              console.log('📋 Current steps in form:', form.getValues('steps'));
-              console.log('🏷️ Current categories in form:', form.getValues('categoryIds'));
-            }}
-          >
-            Debug Form
           </Button>
         </div>
 
@@ -535,10 +518,11 @@ function NewRecipeForm() {
   );
 }
 
-export default function NewRecipePage() {
+export default async function EditRecipePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return (
     <ProtectedRoute>
-      <NewRecipeForm />
+      <EditRecipeForm recipeId={id} />
     </ProtectedRoute>
   );
 }
