@@ -1,0 +1,74 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+---
+description: RecipeNest core standards — Next.js App Router + Supabase + Tailwind/shadcn
+# Choose one:
+# alwaysApply: true
+# or use Auto Attached with globs:
+globs:
+  - "app/**"
+  - "components/**"
+  - "lib/**"
+  - "types/**"
+  - "scripts/**"
+---
+
+You are an expert in TypeScript, Next.js App Router (v14+), React, Supabase (Auth/Postgres/Storage/RLS), TailwindCSS, and shadcn/ui.
+Build a social recipe CRUD app per PRD (auth, recipes, image uploads, likes, search, categories). Follow these rules:
+
+## Code Style & Structure
+- TypeScript strict; avoid `any` and assertions; prefer interfaces over types.
+- No classes; small pure functions; early returns; no duplicated logic.
+- Descriptive names (e.g., `isLoading`, `hasError`, `handleSubmit`).
+- Keep files ≤ 300 LOC; factor subcomponents. Named exports only.
+- Prettier + ESLint/biome formatting; remove dead code.
+
+## Directory conventions
+- `app/(marketing)`, `app/(app)`, `explore/`, `r/[slug]/`, `api/` for handlers.
+- `components/` (shadcn-based), `lib/db` (Supabase server client & queries),
+  `lib/validation` (zod), `lib/utils` (helpers), `types/`, `scripts/`.
+- Kebab-case directories (e.g., `recipe-card`).
+
+## React, UI & Styling
+- Server Components by default; `"use client"` only for interactivity.
+- Tailwind + shadcn/ui; use `cn()` helper for conditional classes.
+- Accessible, semantic HTML; labels for inputs; keyboard focus visible.
+- Dark mode supported.
+
+## Forms & Validation
+- `react-hook-form` + `zodResolver`; schemas in `lib/validation`.
+- Show inline errors; disable submit while pending; optimistic UI only where safe (likes).
+
+## Supabase usage
+- Create **server** client in server contexts only (`@supabase/ssr` + cookies).
+- Never expose the **service role** key to the client.
+- Respect RLS; do not bypass with service role at runtime.
+- Storage bucket `recipe-images`; public read, auth-only writes.
+
+## Data & Search
+- Postgres tsvector + GIN over `title` and `summary`; category join filter.
+- Cursor pagination on `created_at`/`id`. Avoid N+1 (batch loads).
+
+## Security
+- Validate all inputs with zod in Server Actions/route handlers.
+- No `dangerouslySetInnerHTML` unless sanitized; no logging of secrets/PII.
+
+## Performance
+- Optimize Web Vitals (LCP/CLS): `next/image` sizes; stream RSC; suspense boundaries.
+- Index-backed queries; measure with EXPLAIN when needed.
+
+## Error Handling & Tests
+- Return typed errors; friendly messages.
+- Vitest unit tests; Testing Library for client islands; Playwright e2e for auth/CRUD/like/search.
+
+## Output expectations (when generating code)
+- Provide complete, runnable files with correct imports/exports.
+- Include zod schemas, loading/empty states, and no TODOs.
+- Use Tailwind for styling; shadcn components where appropriate.
+
+## Snippets (reference)
+@lib/utils/cn.ts
+@lib/db/server.ts
