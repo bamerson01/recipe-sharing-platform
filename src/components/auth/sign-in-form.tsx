@@ -24,6 +24,7 @@ interface SignInFormProps {
 export function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const { signIn } = useAuth();
 
   const {
@@ -42,6 +43,9 @@ export function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
       const { error } = await signIn(data.email, data.password);
       if (error) {
         setError(error.message);
+      } else {
+        setSuccess(true);
+        // The auth context will handle the redirect automatically
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -49,6 +53,27 @@ export function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
       setIsLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="pt-6 text-center">
+          <div className="mb-4">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Welcome back!</h3>
+          <p className="text-muted-foreground mb-4">
+            Redirecting you to your profile...
+          </p>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">

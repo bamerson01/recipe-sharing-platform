@@ -23,20 +23,16 @@ export function MainNav() {
         </div>
 
         <nav className="flex items-center space-x-6 text-sm font-medium flex-1">
-          <Link href="/explore" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
-            <Search className="h-4 w-4" />
-            <span>Explore</span>
+          <Link href="/explore" className="transition-colors hover:text-foreground/80">
+            Explore
           </Link>
-
           {user && (
             <>
-              <Link href="/new" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
-                <Plus className="h-4 w-4" />
-                <span>New Recipe</span>
+              <Link href="/recipes/new" className="transition-colors hover:text-foreground/80">
+                New Recipe
               </Link>
-              <Link href="/my-recipes" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
-                <BookOpen className="h-4 w-4" />
-                <span>My Recipes</span>
+              <Link href="/recipes/my" className="transition-colors hover:text-foreground/80">
+                My Recipes
               </Link>
             </>
           )}
@@ -48,9 +44,9 @@ export function MainNav() {
               {user ? (
                 <div className="flex items-center space-x-4">
                   <Link href="/profile">
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>Profile</span>
+                    <Button variant="ghost" size="sm">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
                     </Button>
                   </Link>
                   <Button variant="outline" size="sm" onClick={handleSignOut}>
@@ -58,9 +54,18 @@ export function MainNav() {
                   </Button>
                 </div>
               ) : (
-                <Link href="/auth">
-                  <Button size="sm">Sign In</Button>
-                </Link>
+                <div className="flex items-center space-x-4">
+                  <Link href="/auth">
+                    <Button variant="ghost" size="sm">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/auth">
+                    <Button size="sm">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
               )}
             </>
           )}

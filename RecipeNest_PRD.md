@@ -21,11 +21,11 @@
 **Who it’s for:** Home cooks and food-curious users who want fast CRUD, clean mobile UI, and social signals (likes) to surface good stuff.
 
 **Experience goals:**
-- 📱 Fast, delightful, mobile-first UI
-- 🧾 Dead-simple editor for ingredients & steps
-- 🔍 Useful search + category filters
-- ❤️ Frictionless like & share
-- 🔒 Private/draft until ready; public when published
+- Fast, delightful, mobile-first UI
+- Dead-simple editor for ingredients & steps
+- Useful search + category filters
+- Frictionless like & share
+- Private/draft until ready; public when published
 
 **Success signals:** 7-day retention on creators, avg. 3+ recipes/user in 30 days, >30% of recipe views from search/browse, median TTFB <150ms on Vercel.
 
