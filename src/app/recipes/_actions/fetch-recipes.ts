@@ -61,6 +61,7 @@ export interface RecipeWithDetails {
     name: string;
     slug: string;
   }>;
+  isLiked?: boolean;
 }
 
 export async function fetchUserRecipes(userId: string) {
@@ -237,7 +238,7 @@ export async function fetchRecipeBySlug(slug: string, userId?: string) {
   }
 }
 
-export async function fetchPublicRecipes(limit = 20, offset = 0) {
+export async function fetchPublicRecipes(limit = 20, offset = 0, userId?: string) {
   try {
     const supabase = await getServerSupabase();
 
@@ -301,12 +302,25 @@ export async function fetchPublicRecipes(limit = 20, offset = 0) {
           `)
           .eq('recipe_id', recipe.id);
 
+        // Check if current user has liked this recipe
+        let isLiked = false;
+        if (userId) {
+          const { data: like } = await supabase
+            .from('likes')
+            .select('id')
+            .eq('recipe_id', recipe.id)
+            .eq('user_id', userId)
+            .single();
+          isLiked = !!like;
+        }
+
         return {
           ...recipe,
           author: recipe.author,
           ingredients: ingredients || [],
           steps: steps || [],
           categories: categories?.map(c => c.categories) || [],
+          isLiked,
         };
       })
     );

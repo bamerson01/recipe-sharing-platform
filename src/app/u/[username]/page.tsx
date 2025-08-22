@@ -184,10 +184,12 @@ export default function UserProfilePage() {
               {recipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.slug}
+                  id={recipe.id}
                   slug={recipe.slug}
                   title={recipe.title}
                   summary={recipe.summary}
-                  imagePath={recipe.cover_image_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}` : undefined}
+                  cover_image_key={recipe.cover_image_key}
+                  updated_at={recipe.updated_at}
                   likeCount={recipe.like_count}
                   authorName={profile.display_name || profile.username || 'Anonymous'}
                   authorUsername={profile.username}
@@ -217,10 +219,12 @@ export default function UserProfilePage() {
               {likedRecipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.slug}
+                  id={recipe.id}
                   slug={recipe.slug}
                   title={recipe.title}
                   summary={recipe.summary}
-                  imagePath={recipe.cover_image_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}` : undefined}
+                  cover_image_key={recipe.cover_image_key}
+                  updated_at={recipe.updated_at}
                   likeCount={recipe.like_count}
                   authorName={recipe.author?.display_name || recipe.author?.username || 'Anonymous'}
                   authorUsername={recipe.author?.username}

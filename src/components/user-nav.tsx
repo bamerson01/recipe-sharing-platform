@@ -18,6 +18,9 @@ export function UserNav() {
       <Link href="/recipes/my" className="transition-colors hover:text-foreground/80">
         My Recipes
       </Link>
+      <Link href="/saved" className="transition-colors hover:text-foreground/80">
+        Saved
+      </Link>
     </>
   );
 }

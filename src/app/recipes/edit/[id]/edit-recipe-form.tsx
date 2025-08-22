@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ImageIcon, Plus, X, ChefHat, Loader2 } from "lucide-react";
 import { updateRecipe } from "../../_actions/manage-recipes";
+import { imageSrcFromKey } from "@/lib/images/url";
 
 type RecipeFormData = RecipeInputType;
 
@@ -310,7 +311,7 @@ export function EditRecipeForm({ recipe, categories }: EditRecipeFormProps) {
               ) : recipe.cover_image_key ? (
                 <div className="space-y-4">
                   <img
-                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}`}
+                    src={imageSrcFromKey(recipe.cover_image_key, recipe.updated_at) || ''}
                     alt="Current cover"
                     className="mx-auto max-h-64 rounded-lg object-cover"
                   />

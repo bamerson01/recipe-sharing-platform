@@ -5,8 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, Share2, ChefHat, Clock, User } from 'lucide-react';
+import { LikeButton } from '@/components/like-button';
+import { SaveButton } from '@/components/save-button';
+import { Share2, ChefHat, Clock, User } from 'lucide-react';
 import Image from 'next/image';
+import { imageSrcFromKey } from '@/lib/images/url';
 
 interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -55,12 +58,20 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             </div>
           </div>
 
-          {/* Like Button */}
+          {/* Save and Like Buttons */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Heart className="h-4 w-4 mr-2" />
-              {recipe.like_count} likes
-            </Button>
+            <SaveButton
+              recipeId={recipe.id}
+              size="sm"
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700"
+            />
+            <LikeButton
+              recipeId={recipe.id}
+              initialLikeCount={recipe.like_count}
+              size="sm"
+              variant="outline"
+            />
             <Button variant="outline" size="sm">
               <Share2 className="h-4 w-4 mr-2" />
               Share
@@ -85,7 +96,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
         <div className="mb-8">
           <div className="relative w-full h-64 md:h-96 rounded-lg overflow-hidden">
             <Image
-              src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}`}
+              src={imageSrcFromKey(recipe.cover_image_key, recipe.updated_at) || ''}
               alt={recipe.title}
               fill
               className="object-cover"

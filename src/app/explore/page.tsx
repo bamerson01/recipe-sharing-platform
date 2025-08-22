@@ -1,9 +1,29 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
 import { RecipeGrid } from "@/components/recipe-grid";
 import { SearchFilters } from "@/components/search-filters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSearchParams } from "next/navigation";
 
 export default function ExplorePage() {
+  const searchParams = useSearchParams();
+  const [initialQuery, setInitialQuery] = useState("");
+  const [initialCategories, setInitialCategories] = useState<number[]>([]);
+  const [initialSort, setInitialSort] = useState("relevance");
+
+  useEffect(() => {
+    const query = searchParams.get('q') || '';
+    const categories = searchParams.get('categories');
+    const sort = searchParams.get('sort') || 'relevance';
+
+    setInitialQuery(query);
+    if (categories) {
+      setInitialCategories(categories.split(',').map(id => parseInt(id)).filter(id => !isNaN(id)));
+    }
+    setInitialSort(sort);
+  }, [searchParams]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -13,10 +33,12 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      <SearchFilters />
-
       <Suspense fallback={<RecipeGridSkeleton />}>
-        <RecipeGrid />
+        <RecipeGrid
+          initialQuery={initialQuery}
+          initialCategories={initialCategories}
+          initialSort={initialSort}
+        />
       </Suspense>
     </div>
   );

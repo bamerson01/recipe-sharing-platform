@@ -6,9 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Share2, ChefHat, Clock, User } from "lucide-react";
+import { LikeButton } from "@/components/like-button";
+import { SaveButton } from "@/components/save-button";
+import { Share2, ChefHat, Clock, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { imageSrcFromKey } from "@/lib/images/url";
 
 interface RecipeDetailModalProps {
   isOpen: boolean;
@@ -48,6 +51,7 @@ interface RecipeDetailModalProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onToggleVisibility?: () => void;
+  onSaveChange?: (saved: boolean) => void;
 }
 
 export function RecipeDetailModal({
@@ -58,6 +62,7 @@ export function RecipeDetailModal({
   onEdit,
   onDelete,
   onToggleVisibility,
+  onSaveChange,
 }: RecipeDetailModalProps) {
   if (!recipe) return null;
 
@@ -142,7 +147,7 @@ export function RecipeDetailModal({
           {recipe.cover_image_key && (
             <div className="relative w-full h-64 rounded-lg overflow-hidden">
               <Image
-                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}`}
+                src={imageSrcFromKey(recipe.cover_image_key, recipe.updated_at) || ''}
                 alt={recipe.title}
                 fill
                 className="object-cover"
@@ -207,10 +212,19 @@ export function RecipeDetailModal({
           {/* Footer Actions */}
           <div className="flex items-center justify-between pt-4 border-t">
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Heart className="h-4 w-4 mr-2" />
-                {recipe.like_count} likes
-              </Button>
+              <SaveButton
+                recipeId={recipe.id}
+                size="sm"
+                variant="default"
+                className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700"
+                onSaveChange={onSaveChange}
+              />
+              <LikeButton
+                recipeId={recipe.id}
+                initialLikeCount={recipe.like_count}
+                size="sm"
+                variant="outline"
+              />
               <Button variant="outline" size="sm">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share

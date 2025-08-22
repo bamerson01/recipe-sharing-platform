@@ -6,13 +6,16 @@ const nextConfig = {
   // Other Next.js configurations can go here
   experimental: {
     // Enable any experimental features you want
+    serverActions: {
+      bodySizeLimit: '10mb', // Increase limit for recipe creation with images
+    },
   },
 
   // Image optimization settings
   images: {
-    domains: ['localhost'],
-    // Add your Supabase domain when you deploy
-    // domains: ['localhost', 'your-project.supabase.co'],
+    remotePatterns: [
+      { protocol: 'https', hostname: '**.supabase.co', pathname: '/storage/v1/object/public/**' },
+    ],
   },
 }
 

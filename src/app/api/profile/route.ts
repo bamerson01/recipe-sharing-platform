@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/db/server";
+import { ensureProfile } from "@/lib/db/ensure-profile";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +13,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
+    console.log('User data:', {
+      id: user.id,
+      email: user.email,
+      user_metadata: user.user_metadata
+    });
+
+    // Ensure profile exists (creates if missing)
+    await ensureProfile();
+
     // Get user profile
+    console.log('Querying profile for user:', user.id);
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
@@ -20,7 +31,12 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (profileError) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+      console.error('Profile error:', profileError);
+      return NextResponse.json({
+        error: 'Profile not found',
+        details: profileError.message,
+        code: profileError.code
+      }, { status: 500 });
     }
 
     console.log('Profile fetched:', {
@@ -35,7 +51,8 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching profile:', error);
     return NextResponse.json({
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }
 }

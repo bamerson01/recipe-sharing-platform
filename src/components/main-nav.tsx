@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChefHat, Search, Plus, BookOpen, User } from "lucide-react";
@@ -22,7 +24,7 @@ export function MainNav() {
           <UserNav />
         </nav>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4" suppressHydrationWarning>
           <AuthButtons />
         </div>
       </div>

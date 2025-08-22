@@ -15,6 +15,7 @@ import { fetchUserRecipes, RecipeWithDetails } from "../_actions/fetch-recipes";
 import { deleteRecipe, toggleRecipeVisibility } from "../_actions/manage-recipes";
 import { fetchCategories, Category } from "../_actions/categories";
 import { RecipeDetailModal } from "@/components/recipe-detail-modal";
+import { imageSrcFromKey } from "@/lib/images/url";
 
 function MyRecipesDashboard() {
   const { user } = useAuth();
@@ -290,7 +291,7 @@ function MyRecipesDashboard() {
               >
                 {recipe.cover_image_key ? (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.cover_image_key}`}
+                    src={imageSrcFromKey(recipe.cover_image_key, recipe.updated_at) || ''}
                     alt={recipe.title}
                     className="w-full h-full object-cover"
                   />

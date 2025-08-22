@@ -159,6 +159,26 @@ export interface Database {
           created_at?: string;
         };
       };
+      saves: {
+        Row: {
+          id: number;
+          recipe_id: number;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          recipe_id: number;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          recipe_id?: number;
+          user_id?: string;
+          created_at?: string;
+        };
+      };
     };
   };
 }

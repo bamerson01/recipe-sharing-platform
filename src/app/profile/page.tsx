@@ -10,10 +10,14 @@ import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useState, useEffect } from "react";
 import { getStorageUrl } from "@/lib/storage-utils";
+import { getUserSavedRecipes } from "@/app/recipes/_actions/manage-saves";
+import { getUserLikesCount } from "@/app/recipes/_actions/manage-likes";
 
 function ProfileContent() {
   const { user } = useAuth();
   const [recipeCount, setRecipeCount] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
+  const [likesCount, setLikesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
 
@@ -35,6 +39,18 @@ function ProfileContent() {
         if (profileResponse.ok) {
           const profileData = await profileResponse.json();
           setProfile(profileData.profile);
+        }
+
+        // Fetch saved recipes count
+        const savedResult = await getUserSavedRecipes(user.id, 1000, 0);
+        if (savedResult.success && savedResult.recipes) {
+          setSavedCount(savedResult.recipes.length);
+        }
+
+        // Fetch likes count
+        const likesResult = await getUserLikesCount(user.id);
+        if (likesResult.success && likesResult.count !== undefined) {
+          setLikesCount(likesResult.count);
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -85,31 +101,39 @@ function ProfileContent() {
 
         {/* Quick Stats */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <Link href="/recipes/my">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold text-primary">
+                  {loading ? '...' : recipeCount}
+                </CardTitle>
+                <CardDescription>Recipes Created</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <ChefHat className="h-8 w-8 mx-auto text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/saved">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold text-primary">
+                  {loading ? '...' : savedCount}
+                </CardTitle>
+                <CardDescription>Recipes Saved</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <BookOpen className="h-8 w-8 mx-auto text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold text-primary">
-                {loading ? '...' : recipeCount}
+                {loading ? '...' : likesCount}
               </CardTitle>
-              <CardDescription>Recipes Created</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <ChefHat className="h-8 w-8 mx-auto text-muted-foreground" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-primary">0</CardTitle>
-              <CardDescription>Recipes Saved</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <BookOpen className="h-8 w-8 mx-auto text-muted-foreground" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-primary">0</CardTitle>
               <CardDescription>Likes Given</CardDescription>
             </CardHeader>
             <CardContent className="text-center">

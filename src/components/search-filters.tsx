@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,29 +14,46 @@ interface Category {
 }
 
 interface SearchFiltersProps {
+  initialQuery?: string;
+  initialCategories?: number[];
+  initialSort?: string;
   onSearchChange?: (query: string) => void;
   onCategoryChange?: (categoryIds: number[]) => void;
   onSortChange?: (sort: string) => void;
 }
 
 export function SearchFilters({
+  initialQuery = "",
+  initialCategories = [],
+  initialSort = "relevance",
   onSearchChange,
   onCategoryChange,
   onSortChange,
 }: SearchFiltersProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [sortBy, setSortBy] = useState("newest");
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [selectedCategories, setSelectedCategories] = useState<number[]>(initialCategories);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock categories - will be fetched from API
-  const categories: Category[] = [
-    { id: 1, name: "Breakfast", slug: "breakfast" },
-    { id: 2, name: "Lunch", slug: "lunch" },
-    { id: 3, name: "Dinner", slug: "dinner" },
-    { id: 4, name: "Dessert", slug: "dessert" },
-    { id: 5, name: "Vegan", slug: "vegan" },
-    { id: 6, name: "Quick", slug: "quick" },
-  ];
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data.categories || []);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -60,13 +77,13 @@ export function SearchFilters({
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedCategories([]);
-    setSortBy("newest");
+    setSortBy("relevance");
     onSearchChange?.("");
     onCategoryChange?.([]);
-    onSortChange?.("newest");
+    onSortChange?.("relevance");
   };
 
-  const hasActiveFilters = searchQuery || selectedCategories.length > 0 || sortBy !== "newest";
+  const hasActiveFilters = searchQuery || selectedCategories.length > 0 || sortBy !== "relevance";
 
   return (
     <div className="space-y-6 mb-8">
@@ -87,10 +104,9 @@ export function SearchFilters({
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="relevance">Best Match</SelectItem>
             <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="most-liked">Most Liked</SelectItem>
-            <SelectItem value="title">Title A-Z</SelectItem>
+            <SelectItem value="top">Most Popular</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -147,13 +163,11 @@ export function SearchFilters({
             ) : null;
           })}
 
-          {sortBy !== "newest" && (
+          {sortBy !== "relevance" && (
             <Badge variant="secondary" className="gap-1">
-              Sort: {sortBy === "most-liked" ? "Most Liked" :
-                sortBy === "oldest" ? "Oldest First" :
-                  sortBy === "title" ? "Title A-Z" : "Newest First"}
+              Sort: {sortBy === "newest" ? "Newest First" : "Most Popular"}
               <button
-                onClick={() => handleSortChange("newest")}
+                onClick={() => handleSortChange("relevance")}
                 className="ml-1 hover:opacity-70"
               >
                 <X className="h-3 w-3" />
