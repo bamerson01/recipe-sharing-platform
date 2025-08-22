@@ -337,7 +337,7 @@ export default function EditProfilePage() {
                 <div className="flex items-start space-x-2 mt-2">
                   <div className="w-4 h-4 mt-0.5 text-muted-foreground">💬</div>
                   <p className="text-sm text-muted-foreground italic">
-                    "{profile.bio}"
+                    &ldquo;{profile.bio}&rdquo;
                   </p>
                 </div>
               )}
@@ -385,6 +385,8 @@ export default function EditProfilePage() {
                     className="hidden"
                     tabIndex={-1}
                     autoFocus={false}
+                    aria-hidden="true"
+                    style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px' }}
                   />
                   <Button
                     type="button"

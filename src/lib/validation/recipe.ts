@@ -4,6 +4,9 @@ export const RecipeInput = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
   summary: z.string().optional(),
   isPublic: z.boolean(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).nullable().optional(),
+  prepTime: z.number().int().min(0).nullable().optional(),
+  cookTime: z.number().int().min(0).nullable().optional(),
   ingredients: z.array(z.object({
     text: z.string().min(1, 'Ingredient text is required'),
     position: z.number().int().min(0),

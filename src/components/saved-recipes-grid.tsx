@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { RecipeCard } from "@/components/recipe-card";
-import { RecipeDetailModal } from "@/components/recipe-detail-modal";
+import { RecipeCard } from "@/components/recipe-card-unified";
+import { RecipeDetailModal } from "@/components/recipe-detail-modal-unified";
 import { getUserSavedRecipes } from "@/app/recipes/_actions/manage-saves";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ export function SavedRecipesGrid() {
 
       try {
         const result = await getUserSavedRecipes(user.id);
-        if (result.success) {
+        if (result.success && result.recipes) {
           setRecipes(result.recipes);
         }
       } catch (error) {
@@ -98,23 +98,22 @@ export function SavedRecipesGrid() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recipes.map((recipe) => (
-          <div key={recipe.slug} onClick={() => handleViewRecipe(recipe)} className="cursor-pointer">
-            <RecipeCard
-              id={recipe.id}
-              slug={recipe.slug}
-              title={recipe.title}
-              summary={recipe.summary}
-              cover_image_key={recipe.cover_image_key}
-              updated_at={recipe.updated_at}
-              likeCount={recipe.like_count}
-              authorName={recipe.author.display_name || 'Anonymous'}
-              authorUsername={recipe.author.username}
-              authorAvatar={recipe.author.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}` : undefined}
-              categories={recipe.categories}
-              onOpenModal={() => handleViewRecipe(recipe)}
-              disableNavigation={true}
-            />
-          </div>
+          <RecipeCard
+            key={recipe.id}
+            recipe={{
+              ...recipe,
+              like_count: recipe.like_count,
+              is_public: recipe.is_public || true,
+              is_saved: true, // Mark all recipes as saved since they're in the saved list
+              author: recipe.author || {
+                id: '',
+                display_name: null,
+                username: null,
+                avatar_key: null
+              }
+            }}
+            onOpenModal={() => handleViewRecipe(recipe)}
+          />
         ))}
       </div>
 
@@ -122,13 +121,8 @@ export function SavedRecipesGrid() {
       <RecipeDetailModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        recipe={selectedRecipe}
-        isOwner={false}
-        onSaveChange={(saved) => {
-          if (selectedRecipe) {
-            handleSaveChange(selectedRecipe.id, saved);
-          }
-        }}
+        recipeId={selectedRecipe?.id || null}
+        onSaveChange={(id, saved) => handleSaveChange(id, saved)}
       />
     </>
   );

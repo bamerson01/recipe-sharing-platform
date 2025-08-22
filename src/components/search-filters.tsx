@@ -35,6 +35,14 @@ export function SearchFilters({
   const [sortBy, setSortBy] = useState(initialSort);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Sync with prop changes (when URL params change)
+  useEffect(() => {
+    setSearchQuery(initialQuery);
+    setSelectedCategories(initialCategories);
+    setSortBy(initialSort);
+  }, [initialQuery, initialCategories, initialSort]);
 
   // Fetch categories from API
   useEffect(() => {
@@ -55,9 +63,29 @@ export function SearchFilters({
     fetchCategories();
   }, []);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [searchTimeout]);
+
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    onSearchChange?.(value);
+    
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    // Set new timeout for debounced search
+    const timeout = setTimeout(() => {
+      onSearchChange?.(value);
+    }, 500); // 500ms debounce
+    
+    setSearchTimeout(timeout);
   };
 
   const handleCategoryToggle = (categoryId: number) => {
@@ -140,7 +168,10 @@ export function SearchFilters({
             <Badge variant="secondary" className="gap-1">
               Search: &ldquo;{searchQuery}&rdquo;
               <button
-                onClick={() => handleSearchChange("")}
+                onClick={() => {
+                  setSearchQuery("");
+                  onSearchChange?.("");
+                }}
                 className="ml-1 hover:opacity-70"
               >
                 <X className="h-3 w-3" />

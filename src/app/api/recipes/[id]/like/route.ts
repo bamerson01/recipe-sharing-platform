@@ -3,10 +3,11 @@ import { getServerSupabase } from '@/lib/db/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await getServerSupabase();
+    const { id } = await params;
 
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -14,7 +15,7 @@ export async function GET(
       return NextResponse.json({ liked: false });
     }
 
-    const recipeId = parseInt(params.id);
+    const recipeId = parseInt(id);
     if (isNaN(recipeId)) {
       return NextResponse.json({ error: 'Invalid recipe ID' }, { status: 400 });
     }
@@ -44,10 +45,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await getServerSupabase();
+    const { id } = await params;
 
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -55,7 +57,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const recipeId = parseInt(params.id);
+    const recipeId = parseInt(id);
     if (isNaN(recipeId)) {
       return NextResponse.json({ error: 'Invalid recipe ID' }, { status: 400 });
     }

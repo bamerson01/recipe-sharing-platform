@@ -138,7 +138,11 @@ export function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            className="w-full min-h-[36px]" 
+            disabled={isLoading}
+          >
             {isLoading ? "Creating account..." : "Create Account"}
           </Button>
 

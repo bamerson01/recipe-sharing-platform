@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getSession();
 
-    const { data: { authListener } } = createClient().auth.onAuthStateChange(
+    const { data: authListener } = createClient().auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
@@ -50,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Only redirect if we're on an auth page
           const currentPath = window.location.pathname;
           if (currentPath === '/auth') {
+            // Navigate to profile
             router.push('/profile');
           }
         } else if (event === 'SIGNED_OUT') {

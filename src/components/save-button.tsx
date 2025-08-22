@@ -27,12 +27,16 @@ export function SaveButton({
   const [saved, setSaved] = useState(initialSaved);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check initial save status when component mounts
+  // Don't check save status if we're in a list context (SavedRecipesGrid)
+  // The saved recipes grid already knows these are saved
   useEffect(() => {
-    if (user) {
-      checkSaveStatus();
+    // Only check if we don't have an explicit initial value
+    // This prevents checking for recipes we already know are saved
+    if (user && recipeId && initialSaved === false) {
+      // Skip the check for now to prevent infinite loops
+      // checkSaveStatus();
     }
-  }, [user, recipeId]);
+  }, []); // Empty dependency array - only run once on mount
 
   const checkSaveStatus = async () => {
     try {
@@ -64,9 +68,9 @@ export function SaveButton({
       console.log('Toggle save result:', result);
 
       if (result.success) {
-        setSaved(result.saved);
+        setSaved(result.saved || false);
         // Call parent callback if provided
-        onSaveChange?.(result.saved);
+        onSaveChange?.(result.saved || false);
       } else {
         console.error('Error toggling save:', result.error || 'Unknown error');
       }

@@ -3,23 +3,28 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChefHat, Heart, Calendar, Loader2 } from "lucide-react";
-import { RecipeCard } from "@/components/recipe-card";
-import { RecipeDetailModal } from "@/components/recipe-detail-modal";
+import { ChefHat, Heart, Users, Loader2 } from "lucide-react";
+import { RecipeCard } from "@/components/recipe-card-unified";
+import { RecipeDetailModal } from "@/components/recipe-detail-modal-unified";
+import { FollowButton } from "@/components/follow-button";
+import { Button } from "@/components/ui/button";
 import { fetchUserRecipes } from "@/app/recipes/_actions/fetch-recipes";
 import { fetchUserLikedRecipes } from "@/app/recipes/_actions/fetch-recipes";
 import { fetchUserProfile } from "@/app/recipes/_actions/fetch-recipes";
 import { getStorageUrl } from "@/lib/storage-utils";
+import { useAuth } from "@/contexts/auth-context";
+import Link from "next/link";
 
 interface UserProfile {
   id: string;
   username: string | null;
   display_name: string | null;
   avatar_key: string | null;
+  bio: string | null;
+  follower_count: number;
+  following_count: number;
   created_at: string;
 }
 
@@ -31,7 +36,11 @@ interface Recipe {
   cover_image_key: string | null;
   like_count: number;
   is_public: boolean;
+  difficulty?: 'easy' | 'medium' | 'hard' | null;
+  prep_time?: number | null;
+  cook_time?: number | null;
   created_at: string;
+  updated_at?: string;
   author?: {
     id: string;
     display_name: string | null;
@@ -39,11 +48,14 @@ interface Recipe {
     avatar_key?: string | null;
   };
   categories: Array<{ id: number; name: string; slug: string }>;
+  ingredients?: Array<{ id: number; position: number; text: string }>;
+  steps?: Array<{ id: number; position: number; text: string }>;
 }
 
 export default function UserProfilePage() {
   const params = useParams();
   const username = params.username as string;
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [likedRecipes, setLikedRecipes] = useState<Recipe[]>([]);
@@ -51,6 +63,8 @@ export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("recipes");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -59,19 +73,21 @@ export default function UserProfilePage() {
 
         // Load user profile
         const profileResult = await fetchUserProfile(username);
-        if (profileResult.ok) {
+        if (profileResult.ok && profileResult.profile) {
           setProfile(profileResult.profile);
+          setFollowerCount(profileResult.profile.follower_count || 0);
+          setFollowingCount(profileResult.profile.following_count || 0);
 
           // Load user's recipes
           const recipesResult = await fetchUserRecipes(profileResult.profile.id);
           if (recipesResult.ok) {
-            setRecipes(recipesResult.recipes);
+            setRecipes(recipesResult.recipes as Recipe[]);
           }
 
           // Load user's liked recipes
           const likedResult = await fetchUserLikedRecipes(profileResult.profile.id);
           if (likedResult.ok) {
-            setLikedRecipes(likedResult.recipes);
+            setLikedRecipes(likedResult.recipes as Recipe[]);
           }
         }
       } catch (error) {
@@ -122,7 +138,7 @@ export default function UserProfilePage() {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Avatar className="h-24 w-24" tabIndex={-1}>
-              <AvatarImage src={profile.avatar_key ? getStorageUrl(profile.avatar_key) : undefined} />
+              <AvatarImage src={profile.avatar_key ? getStorageUrl(profile.avatar_key) || undefined : undefined} />
               <AvatarFallback className="text-2xl">
                 {profile.display_name?.charAt(0).toUpperCase() || profile.username?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
@@ -131,25 +147,47 @@ export default function UserProfilePage() {
           <CardTitle className="text-3xl">
             {profile.display_name || profile.username || 'Anonymous User'}
           </CardTitle>
+          {profile.username && (
+            <p className="text-muted-foreground">@{profile.username}</p>
+          )}
           {profile.bio && (
             <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
               {profile.bio}
             </p>
           )}
-          <CardDescription>
+          <div className="mt-4">
+            {user && user.id !== profile.id && (
+              <FollowButton
+                username={profile.username || ''}
+                userId={profile.id}
+                onFollowChange={(isFollowing) => {
+                  setFollowerCount(prev => isFollowing ? prev + 1 : Math.max(0, prev - 1));
+                }}
+              />
+            )}
+          </div>
+          <CardDescription className="mt-4">
             Member since {new Date(profile.created_at).toLocaleDateString()}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+          <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{recipes.length}</div>
-              <div className="text-sm text-muted-foreground">Recipes Created</div>
+              <div className="text-sm text-muted-foreground">Recipes</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{likedRecipes.length}</div>
-              <div className="text-sm text-muted-foreground">Recipes Liked</div>
+              <div className="text-sm text-muted-foreground">Liked</div>
             </div>
+            <Link href={`/u/${username}/followers`} className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="text-2xl font-bold text-primary">{followerCount}</div>
+              <div className="text-sm text-muted-foreground">Followers</div>
+            </Link>
+            <Link href={`/u/${username}/following`} className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="text-2xl font-bold text-primary">{followingCount}</div>
+              <div className="text-sm text-muted-foreground">Following</div>
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -175,7 +213,7 @@ export default function UserProfilePage() {
                 <ChefHat className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">No recipes yet</h3>
                 <p className="text-muted-foreground">
-                  This user hasn't created any recipes yet.
+                  This user hasn&apos;t created any recipes yet.
                 </p>
               </CardContent>
             </Card>
@@ -183,18 +221,21 @@ export default function UserProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recipes.map((recipe) => (
                 <RecipeCard
-                  key={recipe.slug}
-                  id={recipe.id}
-                  slug={recipe.slug}
-                  title={recipe.title}
-                  summary={recipe.summary}
-                  cover_image_key={recipe.cover_image_key}
-                  updated_at={recipe.updated_at}
-                  likeCount={recipe.like_count}
-                  authorName={profile.display_name || profile.username || 'Anonymous'}
-                  authorUsername={profile.username}
-                  authorAvatar={profile.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${profile.avatar_key}` : undefined}
-                  categories={recipe.categories}
+                  key={recipe.id}
+                  recipe={{
+                    ...recipe,
+                    updated_at: recipe.updated_at || recipe.created_at,
+                    difficulty: recipe.difficulty || null,
+                    prep_time: recipe.prep_time || null,
+                    cook_time: recipe.cook_time || null,
+                    author: {
+                      id: profile?.id || '',
+                      display_name: profile?.display_name || null,
+                      username: profile?.username || null,
+                      avatar_key: profile?.avatar_key || null
+                    },
+                    is_public: recipe.is_public
+                  }}
                   onOpenModal={() => handleViewRecipe(recipe)}
                 />
               ))}
@@ -210,7 +251,7 @@ export default function UserProfilePage() {
                 <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">No liked recipes yet</h3>
                 <p className="text-muted-foreground">
-                  This user hasn't liked any recipes yet.
+                  This user hasn&apos;t liked any recipes yet.
                 </p>
               </CardContent>
             </Card>
@@ -218,18 +259,22 @@ export default function UserProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {likedRecipes.map((recipe) => (
                 <RecipeCard
-                  key={recipe.slug}
-                  id={recipe.id}
-                  slug={recipe.slug}
-                  title={recipe.title}
-                  summary={recipe.summary}
-                  cover_image_key={recipe.cover_image_key}
-                  updated_at={recipe.updated_at}
-                  likeCount={recipe.like_count}
-                  authorName={recipe.author?.display_name || recipe.author?.username || 'Anonymous'}
-                  authorUsername={recipe.author?.username}
-                  authorAvatar={recipe.author?.avatar_key ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}` : undefined}
-                  categories={recipe.categories}
+                  key={recipe.id}
+                  recipe={{
+                    ...recipe,
+                    updated_at: recipe.updated_at || recipe.created_at,
+                    difficulty: recipe.difficulty || null,
+                    prep_time: recipe.prep_time || null,
+                    cook_time: recipe.cook_time || null,
+                    like_count: recipe.like_count,
+                    is_public: recipe.is_public,
+                    author: {
+                      id: recipe.author?.id || '',
+                      display_name: recipe.author?.display_name || null,
+                      username: recipe.author?.username || null,
+                      avatar_key: recipe.author?.avatar_key || null
+                    }
+                  }}
                   onOpenModal={() => handleViewRecipe(recipe)}
                 />
               ))}
@@ -242,8 +287,7 @@ export default function UserProfilePage() {
       <RecipeDetailModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        recipe={selectedRecipe}
-        isOwner={false}
+        recipeId={selectedRecipe?.id || null}
       />
     </div>
   );

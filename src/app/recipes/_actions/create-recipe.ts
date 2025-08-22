@@ -7,21 +7,41 @@ import { RecipeInput } from '@/lib/validation/recipe';
 import { slugify, generateUniqueSlug } from '@/lib/utils/slugify';
 
 const CreateRecipeInput = RecipeInput.extend({
-  imageFile: z.instanceof(File).nullable().optional(),
+  imageFile: z.any().optional(), // File validation doesn't work in server actions
 });
 
 export async function createRecipe(formData: FormData) {
   try {
     // Parse form data
+    const imageFile = formData.get('imageFile');
     const rawData = {
       title: formData.get('title'),
       summary: formData.get('summary') || undefined,
       isPublic: formData.get('isPublic') === 'on',
+      difficulty: formData.get('difficulty') || null,
+      prepTime: formData.get('prepTime') ? parseInt(formData.get('prepTime') as string, 10) : null,
+      cookTime: formData.get('cookTime') ? parseInt(formData.get('cookTime') as string, 10) : null,
       ingredients: JSON.parse(formData.get('ingredients') as string),
       steps: JSON.parse(formData.get('steps') as string),
       categoryIds: JSON.parse(formData.get('categoryIds') as string),
-      imageFile: formData.get('imageFile') as File | null,
+      imageFile: imageFile instanceof File ? imageFile : null,
     };
+    
+    console.log('📥 Raw FormData analysis:');
+    console.log('  imageFile from FormData:', imageFile);
+    console.log('  imageFile type:', typeof imageFile);
+    console.log('  imageFile is File?:', imageFile instanceof File);
+    if (imageFile instanceof File) {
+      console.log('  File details:', {
+        name: imageFile.name,
+        size: imageFile.size,
+        type: imageFile.type
+      });
+    }
+    console.log('📥 Raw data created:', {
+      ...rawData,
+      imageFile: rawData.imageFile ? 'File object' : null
+    });
 
     const parsed = CreateRecipeInput.safeParse(rawData);
     if (!parsed.success) {
@@ -75,11 +95,17 @@ export async function createRecipe(formData: FormData) {
 
     // Handle image upload if provided
     let imagePath: string | null = null;
-    if (parsed.data.imageFile) {
+    if (parsed.data.imageFile && parsed.data.imageFile instanceof File) {
+      console.log('🖼️ Processing image upload...');
+      console.log('  File name:', parsed.data.imageFile.name);
+      console.log('  File size:', parsed.data.imageFile.size);
+      console.log('  File type:', parsed.data.imageFile.type);
+      
       const imageBuffer = await parsed.data.imageFile.arrayBuffer();
       const imageKey = `recipes/${user.id}/covers/${Date.now()}-${parsed.data.imageFile.name}`;
+      console.log('  Storage key:', imageKey);
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('public-media')
         .upload(imageKey, imageBuffer, {
           contentType: parsed.data.imageFile.type,
@@ -87,14 +113,35 @@ export async function createRecipe(formData: FormData) {
         });
 
       if (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return { ok: false, message: 'Failed to upload image' } as const;
+        console.error('❌ Image upload error:', uploadError);
+        console.error('  Error details:', {
+          message: uploadError.message,
+          status: (uploadError as any).status,
+          statusCode: (uploadError as any).statusCode
+        });
+        return { ok: false, message: `Failed to upload image: ${uploadError.message}` } as const;
       }
-
+      
+      console.log('✅ Image uploaded successfully:', uploadData);
       imagePath = imageKey;
+      console.log('  Image path set to:', imagePath);
+    } else {
+      console.log('ℹ️ No image file provided');
     }
 
     // Create recipe with transaction-like approach
+    console.log('📝 Creating recipe with data:', {
+      author_id: user.id,
+      title: parsed.data.title,
+      slug,
+      summary: parsed.data.summary,
+      cover_image_key: imagePath,
+      is_public: parsed.data.isPublic,
+      difficulty: parsed.data.difficulty,
+      prep_time: parsed.data.prepTime,
+      cook_time: parsed.data.cookTime,
+    });
+    
     const { data: recipe, error: recipeError } = await supabase
       .from('recipes')
       .insert({
@@ -104,6 +151,9 @@ export async function createRecipe(formData: FormData) {
         summary: parsed.data.summary,
         cover_image_key: imagePath,
         is_public: parsed.data.isPublic,
+        difficulty: parsed.data.difficulty || null,
+        prep_time: parsed.data.prepTime || null,
+        cook_time: parsed.data.cookTime || null,
       })
       .select()
       .single();
@@ -150,7 +200,7 @@ export async function createRecipe(formData: FormData) {
     }
 
     // Insert category relationships
-    if (parsed.data.categoryIds.length > 0) {
+    if (parsed.data.categoryIds && parsed.data.categoryIds.length > 0) {
       const categoryData = parsed.data.categoryIds.map(categoryId => ({
         recipe_id: recipe.id,
         category_id: categoryId,

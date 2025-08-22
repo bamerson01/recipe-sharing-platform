@@ -192,6 +192,9 @@ function NewRecipeForm() {
       formData.append('title', data.title);
       formData.append('summary', data.summary || '');
       formData.append('isPublic', data.isPublic ? 'on' : 'off');
+      formData.append('difficulty', data.difficulty || '');
+      formData.append('prepTime', data.prepTime?.toString() || '');
+      formData.append('cookTime', data.cookTime?.toString() || '');
       formData.append('ingredients', JSON.stringify(validIngredients));
       formData.append('steps', JSON.stringify(validSteps));
       formData.append('categoryIds', JSON.stringify(data.categoryIds || []));
@@ -295,6 +298,51 @@ function NewRecipeForm() {
                 </Label>
               </div>
             </div>
+
+            {/* Time and Difficulty */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="difficulty">Difficulty</Label>
+                <select
+                  id="difficulty"
+                  {...form.register("difficulty")}
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                >
+                  <option value="">Select difficulty</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="prepTime">Prep Time (minutes)</Label>
+                <Input
+                  id="prepTime"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 15"
+                  {...form.register("prepTime", { 
+                    setValueAs: (v) => v === '' ? null : parseInt(v, 10),
+                    valueAsNumber: true 
+                  })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cookTime">Cook Time (minutes)</Label>
+                <Input
+                  id="cookTime"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 30"
+                  {...form.register("cookTime", { 
+                    setValueAs: (v) => v === '' ? null : parseInt(v, 10),
+                    valueAsNumber: true 
+                  })}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -348,6 +396,9 @@ function NewRecipeForm() {
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px' }}
                 />
 
                 {imagePreview ? (
@@ -505,23 +556,6 @@ function NewRecipeForm() {
             ) : (
               "Create Recipe"
             )}
-          </Button>
-
-          {/* Debug button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              console.log('🔍 Form state:', form.formState);
-              console.log('📝 Form values:', form.getValues());
-              console.log('✅ Form is valid:', form.formState.isValid);
-              console.log('❌ Form errors:', form.formState.errors);
-              console.log('📋 Current ingredients in form:', form.getValues('ingredients'));
-              console.log('📋 Current steps in form:', form.getValues('steps'));
-              console.log('🏷️ Current categories in form:', form.getValues('categoryIds'));
-            }}
-          >
-            Debug Form
           </Button>
         </div>
 

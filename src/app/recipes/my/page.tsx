@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { fetchUserRecipes, RecipeWithDetails } from "../_actions/fetch-recipes";
 import { deleteRecipe, toggleRecipeVisibility } from "../_actions/manage-recipes";
 import { fetchCategories, Category } from "../_actions/categories";
-import { RecipeDetailModal } from "@/components/recipe-detail-modal";
+import { RecipeDetailModal } from "@/components/recipe-detail-modal-unified";
 import { imageSrcFromKey } from "@/lib/images/url";
 
 function MyRecipesDashboard() {
@@ -241,7 +241,7 @@ function MyRecipesDashboard() {
           <SelectContent>
             <SelectItem value="all">All Recipes</SelectItem>
             <SelectItem value="public">Public</SelectItem>
-            <SelectItem value="draft">Drafts</SelectItem>
+            <SelectItem value="private">Private</SelectItem>
           </SelectContent>
         </Select>
 
@@ -304,7 +304,7 @@ function MyRecipesDashboard() {
                 {/* Status Badge */}
                 <div className="absolute top-2 right-2">
                   <Badge variant={recipe.is_public ? "default" : "secondary"}>
-                    {recipe.is_public ? "Public" : "Draft"}
+                    {recipe.is_public ? "Public" : "Private"}
                   </Badge>
                 </div>
 
@@ -411,25 +411,19 @@ function MyRecipesDashboard() {
       <RecipeDetailModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        recipe={selectedRecipe}
-        isOwner={true}
-        onEdit={() => {
-          if (selectedRecipe) {
-            handleEditRecipe(selectedRecipe);
-            handleModalClose();
-          }
+        recipeId={selectedRecipe?.id || null}
+        variant="owner"
+        onEdit={(id) => {
+          window.location.href = `/recipes/edit/${id}`;
+          handleModalClose();
         }}
-        onDelete={() => {
-          if (selectedRecipe) {
-            handleDeleteRecipe(selectedRecipe.id);
-            handleModalClose();
-          }
+        onDelete={(id) => {
+          handleDeleteRecipe(id);
+          handleModalClose();
         }}
-        onToggleVisibility={() => {
-          if (selectedRecipe) {
-            handleToggleVisibility(selectedRecipe.id, selectedRecipe.is_public);
-            handleModalClose();
-          }
+        onToggleVisibility={(id, isPublic) => {
+          handleToggleVisibility(id, isPublic);
+          handleModalClose();
         }}
       />
     </div>

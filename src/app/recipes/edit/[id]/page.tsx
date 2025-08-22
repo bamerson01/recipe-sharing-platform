@@ -3,13 +3,14 @@ import { getServerSupabase } from "@/lib/db/server";
 import { EditRecipeForm } from "./edit-recipe-form";
 
 interface EditRecipePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const supabase = await getServerSupabase();
+  const { id } = await params;
 
   // Get current user
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -18,7 +19,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   }
 
   // Parse recipe ID
-  const recipeId = parseInt(params.id);
+  const recipeId = parseInt(id);
   if (isNaN(recipeId)) {
     notFound();
   }
@@ -34,6 +35,9 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
       cover_image_key,
       is_public,
       author_id,
+      difficulty,
+      prep_time,
+      cook_time,
       created_at,
       updated_at
     `)
@@ -84,7 +88,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
     ...recipe,
     ingredients: ingredientsResult.data || [],
     steps: stepsResult.data || [],
-    categories: categoriesResult.data?.map(c => c.categories) || [],
+    categories: categoriesResult.data?.map(c => Array.isArray(c.categories) ? c.categories[0] : c.categories).filter(Boolean) || [],
   };
 
   return (

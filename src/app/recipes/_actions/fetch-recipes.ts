@@ -223,10 +223,10 @@ export async function fetchRecipeBySlug(slug: string, userId?: string) {
 
     const recipeWithDetails: RecipeWithDetails & { isLiked: boolean } = {
       ...recipe,
-      author: recipe.author,
+      author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
       ingredients: ingredients || [],
       steps: steps || [],
-      categories: categories?.map(c => c.categories) || [],
+      categories: categories?.map(c => Array.isArray(c.categories) ? c.categories[0] : c.categories) || [],
       isLiked,
     };
 
@@ -316,10 +316,10 @@ export async function fetchPublicRecipes(limit = 20, offset = 0, userId?: string
 
         return {
           ...recipe,
-          author: recipe.author,
+          author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
           ingredients: ingredients || [],
           steps: steps || [],
-          categories: categories?.map(c => c.categories) || [],
+          categories: categories?.map(c => Array.isArray(c.categories) ? c.categories[0] : c.categories) || [],
           isLiked,
         };
       })
@@ -412,10 +412,10 @@ export async function fetchRecipeById(recipeId: number, userId?: string) {
 
     const recipeWithDetails: RecipeWithDetails & { isLiked: boolean } = {
       ...recipe,
-      author: recipe.author,
+      author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
       ingredients: ingredients || [],
       steps: steps || [],
-      categories: categories?.map(c => c.categories) || [],
+      categories: categories?.map(c => Array.isArray(c.categories) ? c.categories[0] : c.categories) || [],
       isLiked,
     };
 
@@ -494,9 +494,12 @@ export async function fetchUserLikedRecipes(userId: string) {
       return { ok: false, message: 'Failed to fetch liked recipes' } as const;
     }
 
-    // Fetch categories for each liked recipe
-    const recipesWithCategories = await Promise.all(
+    // Fetch categories, ingredients, and steps for each liked recipe
+    const recipesWithDetails = await Promise.all(
       (likes || []).map(async (like) => {
+        const recipeData = (like as any).recipes;
+        
+        // Fetch categories
         const { data: categories } = await supabase
           .from('recipe_categories')
           .select(`
@@ -507,17 +510,33 @@ export async function fetchUserLikedRecipes(userId: string) {
               slug
             )
           `)
-          .eq('recipe_id', like.recipes.id);
+          .eq('recipe_id', recipeData.id);
+        
+        // Fetch ingredients
+        const { data: ingredients } = await supabase
+          .from('recipe_ingredients')
+          .select('id, position, text')
+          .eq('recipe_id', recipeData.id)
+          .order('position');
+        
+        // Fetch steps
+        const { data: steps } = await supabase
+          .from('recipe_steps')
+          .select('id, position, text')
+          .eq('recipe_id', recipeData.id)
+          .order('position');
 
         return {
-          ...like.recipes,
-          author: like.recipes.author,
-          categories: categories?.map(c => c.categories) || [],
+          ...recipeData,
+          author: Array.isArray(recipeData.author) ? recipeData.author[0] : recipeData.author,
+          categories: categories?.map(c => Array.isArray(c.categories) ? c.categories[0] : c.categories) || [],
+          ingredients: ingredients || [],
+          steps: steps || [],
         };
       })
     );
 
-    return { ok: true, recipes: recipesWithCategories } as const;
+    return { ok: true, recipes: recipesWithDetails } as const;
 
   } catch (error) {
     console.error('Unexpected error fetching user liked recipes:', error);

@@ -7,6 +7,10 @@ export interface Database {
           username: string | null;
           display_name: string | null;
           avatar_url: string | null;
+          avatar_key: string | null;
+          bio: string | null;
+          follower_count: number;
+          following_count: number;
           created_at: string;
         };
         Insert: {
@@ -14,6 +18,10 @@ export interface Database {
           username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
+          avatar_key?: string | null;
+          bio?: string | null;
+          follower_count?: number;
+          following_count?: number;
           created_at?: string;
         };
         Update: {
@@ -21,6 +29,10 @@ export interface Database {
           username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
+          avatar_key?: string | null;
+          bio?: string | null;
+          follower_count?: number;
+          following_count?: number;
           created_at?: string;
         };
       };
@@ -54,6 +66,9 @@ export interface Database {
           cover_image_key: string | null;
           is_public: boolean;
           like_count: number;
+          difficulty: 'easy' | 'medium' | 'hard' | null;
+          prep_time: number | null;
+          cook_time: number | null;
           search_vector: string | null;
           created_at: string;
           updated_at: string;
@@ -67,6 +82,9 @@ export interface Database {
           cover_image_key?: string | null;
           is_public?: boolean;
           like_count?: number;
+          difficulty?: 'easy' | 'medium' | 'hard' | null;
+          prep_time?: number | null;
+          cook_time?: number | null;
           search_vector?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -80,6 +98,9 @@ export interface Database {
           cover_image_key?: string | null;
           is_public?: boolean;
           like_count?: number;
+          difficulty?: 'easy' | 'medium' | 'hard' | null;
+          prep_time?: number | null;
+          cook_time?: number | null;
           search_vector?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -175,6 +196,81 @@ export interface Database {
         Update: {
           id?: number;
           recipe_id?: number;
+          user_id?: string;
+          created_at?: string;
+        };
+      };
+      follows: {
+        Row: {
+          id: number;
+          follower_id: string;
+          following_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          follower_id: string;
+          following_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          follower_id?: string;
+          following_id?: string;
+          created_at?: string;
+        };
+      };
+      recipe_comments: {
+        Row: {
+          id: string;
+          recipe_id: number;
+          user_id: string;
+          parent_id: string | null;
+          body: string;
+          is_edited: boolean;
+          edited_at: string | null;
+          like_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          recipe_id: number;
+          user_id: string;
+          parent_id?: string | null;
+          body: string;
+          is_edited?: boolean;
+          edited_at?: string | null;
+          like_count?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          recipe_id?: number;
+          user_id?: string;
+          parent_id?: string | null;
+          body?: string;
+          is_edited?: boolean;
+          edited_at?: string | null;
+          like_count?: number;
+          created_at?: string;
+        };
+      };
+      comment_likes: {
+        Row: {
+          id: number;
+          comment_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          comment_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          comment_id?: string;
           user_id?: string;
           created_at?: string;
         };

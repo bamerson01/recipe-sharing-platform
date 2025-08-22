@@ -43,6 +43,9 @@ interface RecipeWithDetails {
   cover_image_key: string | null;
   is_public: boolean;
   author_id: string;
+  difficulty: 'easy' | 'medium' | 'hard' | null;
+  prep_time: number | null;
+  cook_time: number | null;
   created_at: string;
   updated_at: string;
   ingredients: Ingredient[];
@@ -68,6 +71,9 @@ export function EditRecipeForm({ recipe, categories }: EditRecipeFormProps) {
       title: recipe.title,
       summary: recipe.summary || "",
       isPublic: recipe.is_public,
+      difficulty: recipe.difficulty,
+      prepTime: recipe.prep_time,
+      cookTime: recipe.cook_time,
       ingredients: recipe.ingredients.length > 0 ? recipe.ingredients : [{ text: "", position: 0 }],
       steps: recipe.steps.length > 0 ? recipe.steps : [{ text: "", position: 0 }],
       categoryIds: recipe.categories.map(c => c.id),
@@ -166,6 +172,9 @@ export function EditRecipeForm({ recipe, categories }: EditRecipeFormProps) {
       formData.append('title', data.title);
       formData.append('summary', data.summary || '');
       formData.append('isPublic', data.isPublic ? 'on' : 'off');
+      formData.append('difficulty', data.difficulty || '');
+      formData.append('prepTime', data.prepTime?.toString() || '');
+      formData.append('cookTime', data.cookTime?.toString() || '');
       formData.append('ingredients', JSON.stringify(validIngredients));
       formData.append('steps', JSON.stringify(validSteps));
       formData.append('categoryIds', JSON.stringify(data.categoryIds || []));
@@ -232,6 +241,44 @@ export function EditRecipeForm({ recipe, categories }: EditRecipeFormProps) {
             )}
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="difficulty">Difficulty</Label>
+              <select
+                id="difficulty"
+                {...form.register("difficulty")}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Select difficulty</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="prepTime">Prep Time (minutes)</Label>
+              <Input
+                id="prepTime"
+                type="number"
+                min="0"
+                placeholder="e.g., 15"
+                {...form.register("prepTime", { valueAsNumber: true })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cookTime">Cook Time (minutes)</Label>
+              <Input
+                id="cookTime"
+                type="number"
+                min="0"
+                placeholder="e.g., 30"
+                {...form.register("cookTime", { valueAsNumber: true })}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="isPublic">Visibility</Label>
             <div className="flex items-center space-x-2">
@@ -295,6 +342,8 @@ export function EditRecipeForm({ recipe, categories }: EditRecipeFormProps) {
                 className="hidden"
                 tabIndex={-1}
                 autoFocus={false}
+                aria-hidden="true"
+                style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px' }}
               />
 
               {imagePreview ? (

@@ -36,11 +36,39 @@ export async function GET(request: NextRequest) {
         cover_image_key,
         is_public,
         like_count,
+        difficulty,
+        prep_time,
+        cook_time,
         created_at,
         updated_at,
         author_id
       `)
       .eq('is_public', true);
+
+    // Add category filter if categories are selected
+    if (categoryIds && categoryIds.length > 0) {
+      // We need to filter recipes that have ANY of the selected categories
+      // First, get recipe IDs that have the selected categories
+      const { data: recipesInCategories } = await supabase
+        .from('recipe_categories')
+        .select('recipe_id')
+        .in('category_id', categoryIds);
+      
+      if (recipesInCategories && recipesInCategories.length > 0) {
+        const recipeIds = recipesInCategories.map(r => r.recipe_id);
+        queryBuilder = queryBuilder.in('id', recipeIds);
+      } else {
+        // No recipes found with these categories, return empty result
+        return NextResponse.json({
+          recipes: [],
+          pagination: {
+            page,
+            limit,
+            hasMore: false
+          }
+        });
+      }
+    }
 
     // Add search filter if query exists
     if (query && query.trim()) {
@@ -88,7 +116,21 @@ export async function GET(request: NextRequest) {
               slug
             )
           `)
-          .eq('recipe_id', recipe.id);
+          .eq('recipe_id', recipe.id) as { data: Array<{ categories: { id: number; name: string; slug: string } }> | null };
+
+        // Fetch ingredients for this recipe
+        const { data: ingredients } = await supabase
+          .from('recipe_ingredients')
+          .select('id, position, text')
+          .eq('recipe_id', recipe.id)
+          .order('position', { ascending: true });
+
+        // Fetch steps for this recipe
+        const { data: steps } = await supabase
+          .from('recipe_steps')
+          .select('id, position, text')
+          .eq('recipe_id', recipe.id)
+          .order('position', { ascending: true });
 
         return {
           id: recipe.id,
@@ -98,6 +140,9 @@ export async function GET(request: NextRequest) {
           cover_image_key: recipe.cover_image_key,
           is_public: recipe.is_public,
           like_count: recipe.like_count,
+          difficulty: recipe.difficulty,
+          prep_time: recipe.prep_time,
+          cook_time: recipe.cook_time,
           created_at: recipe.created_at,
           updated_at: recipe.updated_at,
           author: {
@@ -106,7 +151,10 @@ export async function GET(request: NextRequest) {
             username: author?.username || 'unknown',
             avatar_key: author?.avatar_key || null,
           },
-          categories: categories?.map(c => c.categories) || [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          categories: categories?.map((c: any) => c.categories) || [],
+          ingredients: ingredients || [],
+          steps: steps || [],
           search_rank: 0 // Placeholder for now
         };
       })

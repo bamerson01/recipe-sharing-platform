@@ -53,6 +53,64 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Hide insertion caret on non-editable elements (visual only) */
+  /* This doesn't prevent text selection, just hides the blinking cursor */
+  /* More specific targeting to avoid conflicts */
+  h1, h2, h3, h4, h5, h6, 
+  p, span, div, section, 
+  article, nav, header, footer,
+  button, a, label {
+    caret-color: transparent;
+  }
+  
+  /* Ensure proper caret color for editable elements */
+  input,
+  textarea,
+  [contenteditable="true"],
+  [contenteditable="true"] * {
+    caret-color: auto;
+  }
+  
+  /* Remove outline on non-interactive elements that might receive focus */
+  h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus,
+  p:focus, div:focus, section:focus {
+    outline: none;
+  }
+  
+  /* Ensure forms have consistent spacing */
+  form {
+    display: block;
+  }
+  
+  /* Prevent hidden file inputs from causing cursor issues */
+  input[type="file"][aria-hidden="true"] {
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    user-select: none !important;
+  }
+  
+  /* Prevent cursor appearing in avatars and images */
+  [data-slot="avatar"],
+  [data-slot="avatar-image"],
+  [data-slot="avatar-fallback"] {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    cursor: default !important;
+  }
+  
+  /* Ensure hidden inputs are truly invisible */
+  input.hidden,
+  input[type="file"].hidden {
+    display: none !important;
+    visibility: hidden !important;
+  }
 }
 
 @layer utilities {

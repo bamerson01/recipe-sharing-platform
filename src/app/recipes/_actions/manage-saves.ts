@@ -119,8 +119,8 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
 
     // Fetch additional details for each recipe
     const recipesWithDetails = await Promise.all(
-      (saves || []).map(async (save) => {
-        const recipe = save.recipe;
+      (saves || []).map(async (save: any) => {
+        const recipe = Array.isArray(save.recipe) ? save.recipe[0] : save.recipe;
 
         // Fetch ingredients
         const { data: ingredients } = await supabase
@@ -151,10 +151,11 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
 
         return {
           ...recipe,
+          author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
           savedAt: save.created_at,
           ingredients: ingredients || [],
           steps: steps || [],
-          categories: categories?.map(c => c.categories) || [],
+          categories: categories?.map((c: any) => Array.isArray(c.categories) ? c.categories[0] : c.categories) || [],
         };
       })
     );

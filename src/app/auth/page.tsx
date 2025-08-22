@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 
-export default function AuthPage() {
-  const [isSignUp, setIsSignUp] = useState(false);
+function AuthContent() {
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
+  const [isSignUp, setIsSignUp] = useState(mode === "signup");
+
+  useEffect(() => {
+    setIsSignUp(mode === "signup");
+  }, [mode]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md min-h-[400px]">
         {isSignUp ? (
           <SignUpForm onSwitchToSignIn={() => setIsSignUp(false)} />
         ) : (
@@ -17,5 +24,17 @@ export default function AuthPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md min-h-[400px]" />
+      </div>
+    }>
+      <AuthContent />
+    </Suspense>
   );
 }
