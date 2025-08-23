@@ -27,6 +27,7 @@ function MyRecipesContent() {
   const [recipes, setRecipes] = useState<RecipeWithDetails[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<RecipeWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
@@ -36,26 +37,34 @@ function MyRecipesContent() {
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeWithDetails | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch user's recipes
+  // Fetch user's recipes and profile
   useEffect(() => {
-    const loadRecipes = async () => {
+    const loadData = async () => {
       if (!user) return;
 
       setLoading(true);
       try {
+        // Fetch profile data
+        const profileResponse = await fetch('/api/profile');
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          setProfile(profileData.profile);
+        }
+
+        // Fetch recipes
         const recipesResult = await fetchUserRecipes(user.id);
         if (recipesResult.ok) {
           setRecipes(recipesResult.recipes);
           setFilteredRecipes(recipesResult.recipes);
         }
       } catch (error) {
-        console.error('Error loading recipes:', error);
+        console.error('Error loading data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadRecipes();
+    loadData();
   }, [user]);
 
   // Apply filters and search to recipes
@@ -261,14 +270,11 @@ function MyRecipesContent() {
                 key={recipe.id}
                 recipe={{
                   ...recipe,
-                  difficulty: (recipe as any).difficulty || null,
-                  prep_time: (recipe as any).prep_time || null,
-                  cook_time: (recipe as any).cook_time || null,
                   author: {
                     id: user?.id || '',
-                    display_name: user?.user_metadata?.full_name || null,
-                    username: user?.email?.split('@')[0] || null,
-                    avatar_key: null
+                    display_name: profile?.display_name || recipe.author?.display_name || null,
+                    username: profile?.username || recipe.author?.username || null,
+                    avatar_key: profile?.avatar_key || recipe.author?.avatar_key || null
                   }
                 }}
                 variant="owner"

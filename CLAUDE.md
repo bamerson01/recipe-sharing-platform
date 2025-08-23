@@ -17,6 +17,12 @@ npm start                  # Start production server
 npm run lint               # Run ESLint
 npm run typecheck          # Run TypeScript type checking
 
+# Testing
+npm test                   # Run all tests with Vitest
+npm run test:watch         # Run tests in watch mode
+npm run test:coverage      # Run tests with coverage report
+npm run test:ui            # Run tests with interactive UI
+
 # Database & Storage
 npm run db:seed            # Seed database with test data (tsx src/scripts/seed-database.ts)
 npm run test:storage       # Test storage configuration (tsx src/scripts/test-storage.ts)
@@ -39,6 +45,10 @@ curl http://localhost:3000/api/[route]
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, RLS)
 - **Forms**: react-hook-form + zod validation
 - **State**: AuthContext for global auth, local state for UI
+- **Testing**: Vitest + React Testing Library
+- **Logging**: Custom logging service with environment-aware levels
+- **Error Tracking**: Sentry for production monitoring
+- **Validation**: Zod schemas for API input validation
 
 ### Core Architecture Patterns
 
@@ -181,12 +191,43 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=  # Server-only, never expose to client
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# Optional for production
+SENTRY_DSN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+SENTRY_AUTH_TOKEN=
 ```
+
+## Recent Updates (v0.5.0 - January 2025)
+
+### Quality Improvements
+- **Testing Infrastructure**: Vitest configured with test suites for critical services
+- **Logging Service**: Replaced 430+ console statements with structured logging
+- **Error Tracking**: Sentry integration for production monitoring
+- **Type Safety**: Fixed all remaining TypeScript `any` types
+- **API Validation**: Zod schemas for all endpoints
+
+### UX Enhancements
+- **Smart Login Redirect**: New users → /profile, existing users → /dashboard
+- **Profile Page Redesign**: Removed tabs, added clickable stat cards
+- **Recipe Cards**: Owner variant shows engagement metrics (likes, saves, comments)
+- **Navigation**: Added "My Recipes" to main nav, fixed duplicate sign-in buttons
+
+### Performance & Fixes
+- **Recipe Data**: Added save_count and comment_count to queries
+- **Fixed Infinite Loop**: RecipeDetailModal useEffect dependency issue
+- **Route Consistency**: Renamed /saved to /saved-recipes
+- **Card Overflow**: Fixed with proper flexbox layout and tooltips
 
 ### Documentation References
 
 - **Product Requirements**: `docs/RecipeNest_PRD.md`
-- **Database Schema**: `docs/database_context.md`
-- **Architecture Details**: `docs/ARCHITECTURE.md`
-- **Development History**: `docs/PROJECT_HISTORY.md`
+- **Database Schema**: `docs/database-schema.md`
+- **Architecture Details**: `docs/architecture.md`
+- **Development History**: `docs/project-history.md`
+- **Changelog**: `docs/changelog.md`
+- **Testing Guide**: `docs/testing-guide.md`
+- **QA Improvements**: `docs/qa-improvements-summary.md`
+- **Component Interfaces**: `docs/component-interfaces.md`
 - **Cursor Rules**: `.cursor/rules/cursor-rules.txt`

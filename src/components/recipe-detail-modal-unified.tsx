@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, ChefHat, Edit, Trash2, Eye, EyeOff, ExternalLink, Share2 } from "lucide-react";
+import { Clock, ChefHat, Edit, Trash2, Eye, EyeOff, ExternalLink, Share2, Heart, Bookmark, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { getProfileUrl, getRecipeUrl } from "@/lib/urls";
@@ -44,6 +44,26 @@ export function RecipeDetailModal({
   const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
+    const fetchRecipeDetails = async () => {
+      if (!recipeId) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/recipes/${recipeId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch recipe details');
+        }
+        const data = await response.json();
+        setRecipe(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (isOpen && recipeId) {
       fetchRecipeDetails();
     } else if (!isOpen) {
@@ -52,26 +72,6 @@ export function RecipeDetailModal({
       setError(null);
     }
   }, [isOpen, recipeId]);
-
-  const fetchRecipeDetails = async () => {
-    if (!recipeId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/recipes/${recipeId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch recipe details');
-      }
-      const data = await response.json();
-      setRecipe(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!recipe || !confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
@@ -85,7 +85,7 @@ export function RecipeDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold pr-8">
             {loading ? "Loading Recipe..." : error ? "Error" : recipe?.title || "Recipe Details"}
@@ -108,83 +108,29 @@ export function RecipeDetailModal({
           </div>
         ) : recipe ? (
           <>
-            {/* Sticky Social Actions Bar */}
+            {/* Sticky Actions Bar */}
             <div className="sticky top-0 z-10 bg-background border-b pb-3 pt-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <SaveButton
-                    recipeId={recipe.id}
-                    size="sm"
-                    variant="default"
-                    className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700"
-                    onSaveChange={(saved) => onSaveChange?.(recipe.id, saved)}
-                  />
-                  <LikeButton
-                    recipeId={recipe.id}
-                    initialLikeCount={recipe.like_count}
-                    initialLiked={recipe.is_liked}
-                    size="sm"
-                    variant="outline"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowShareModal(true)}
-                  >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
-                </div>
-
-                {/* View Full Recipe Link */}
-                <Link href={getRecipeUrl(recipe.id, recipe.title)}>
-                  <Button variant="outline" size="sm">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Full Recipe
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Scrollable Content */}
-            <div className="overflow-y-auto flex-1 space-y-6 px-6 pb-6">
-              {/* Header Info */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  {/* Author info - only show if not owner */}
-                  {!isOwner && (
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage
-                          src={recipe.author.avatar_key
-                            ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}`
-                            : undefined
-                          }
-                        />
-                        <AvatarFallback className="text-xs">
-                          {recipe.author.display_name?.[0]?.toUpperCase() ||
-                            recipe.author.username?.[0]?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <Link
-                        href={getProfileUrl(recipe.author.username)}
-                        className="hover:text-primary transition-colors"
-                      >
-                        {recipe.author.display_name || recipe.author.username || 'Anonymous'}
-                      </Link>
+              {isOwner ? (
+                // Owner variant layout
+                <div className="space-y-3">
+                  {/* Stats row */}
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <Heart className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{recipe.like_count || 0}</span>
                     </div>
-                  )}
-
-                  {/* Date */}
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <Bookmark className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{recipe.save_count || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-sm">
+                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{recipe.comment_count || 0}</span>
+                    </div>
                   </div>
-                </div>
-
-                {/* Owner Actions */}
-                {isOwner && (
-                  <div className="flex items-center gap-2">
+                  
+                  {/* Action buttons row */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       variant="outline"
                       size="sm"
@@ -192,12 +138,12 @@ export function RecipeDetailModal({
                     >
                       {recipe.is_public ? (
                         <>
-                          <EyeOff className="mr-2 h-4 w-4" />
+                          <EyeOff className="h-4 w-4 mr-2" />
                           Make Private
                         </>
                       ) : (
                         <>
-                          <Eye className="mr-2 h-4 w-4" />
+                          <Eye className="h-4 w-4 mr-2" />
                           Make Public
                         </>
                       )}
@@ -207,7 +153,7 @@ export function RecipeDetailModal({
                       size="sm"
                       onClick={() => onEdit?.(recipe.id)}
                     >
-                      <Edit className="mr-2 h-4 w-4" />
+                      <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </Button>
                     <Button
@@ -215,11 +161,88 @@ export function RecipeDetailModal({
                       size="sm"
                       onClick={handleDelete}
                     >
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="h-4 w-4 mr-2" />
                       Delete
                     </Button>
+                    <Link href={getRecipeUrl(recipe.id, recipe.title)}>
+                      <Button variant="outline" size="sm">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        View Full Recipe
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                // Default variant layout
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <SaveButton
+                      recipeId={recipe.id}
+                      size="sm"
+                      variant="default"
+                      className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700"
+                      onSaveChange={(saved) => onSaveChange?.(recipe.id, saved)}
+                    />
+                    <LikeButton
+                      recipeId={recipe.id}
+                      initialLikeCount={recipe.like_count}
+                      initialLiked={recipe.is_liked}
+                      size="sm"
+                      variant="outline"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowShareModal(true)}
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+                  
+                  <Link href={getRecipeUrl(recipe.id, recipe.title)}>
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Full Recipe
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 space-y-6 px-6 pb-6">
+              {/* Header Info */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                {/* Author info - only show if not owner */}
+                {!isOwner && (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage
+                        src={recipe.author.avatar_key
+                          ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}`
+                          : undefined
+                        }
+                      />
+                      <AvatarFallback className="text-xs">
+                        {recipe.author.display_name?.[0]?.toUpperCase() ||
+                          recipe.author.username?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Link
+                      href={getProfileUrl(recipe.author.username)}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {recipe.author.display_name || recipe.author.username || 'Anonymous'}
+                    </Link>
                   </div>
                 )}
+
+                {/* Date */}
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
+                </div>
               </div>
 
               {/* Categories */}

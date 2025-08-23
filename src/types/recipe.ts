@@ -29,6 +29,9 @@ export interface RecipeSummary {
   updated_at: string;
   created_at: string;
   is_public: boolean;
+  // Optional engagement metrics
+  save_count?: number;
+  comment_count?: number;
   // Optional user-specific fields
   is_saved?: boolean;
   is_liked?: boolean;

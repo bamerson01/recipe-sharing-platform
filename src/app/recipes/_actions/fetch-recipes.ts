@@ -39,12 +39,16 @@ export interface RecipeWithDetails {
   cover_image_key: string | null;
   is_public: boolean;
   like_count: number;
+  difficulty: 'easy' | 'medium' | 'hard' | null;
+  prep_time: number | null;
+  cook_time: number | null;
   created_at: string;
   updated_at: string;
   author: {
     id: string;
     display_name: string | null;
     username: string | null;
+    avatar_key?: string | null;
   };
   ingredients: Array<{
     id: number;
@@ -61,6 +65,8 @@ export interface RecipeWithDetails {
     name: string;
     slug: string;
   }>;
+  save_count?: number;
+  comment_count?: number;
   isLiked?: boolean;
 }
 
@@ -68,7 +74,7 @@ export async function fetchUserRecipes(userId: string) {
   try {
     const supabase = await getServerSupabase();
 
-    // Fetch recipes with author info
+    // Fetch recipes with author info and counts
     const { data: recipes, error: recipesError } = await supabase
       .from('recipes')
       .select(`
@@ -79,6 +85,9 @@ export async function fetchUserRecipes(userId: string) {
         cover_image_key,
         is_public,
         like_count,
+        difficulty,
+        prep_time,
+        cook_time,
         created_at,
         updated_at,
         author:profiles!inner(
@@ -96,7 +105,7 @@ export async function fetchUserRecipes(userId: string) {
       return { ok: false, message: 'Failed to fetch recipes' } as const;
     }
 
-    // Fetch ingredients, steps, and categories for each recipe
+    // Fetch ingredients, steps, categories, and counts for each recipe
     const recipesWithDetails: RecipeWithDetails[] = [];
 
     for (const recipe of recipes || []) {
@@ -127,12 +136,26 @@ export async function fetchUserRecipes(userId: string) {
         `)
         .eq('recipe_id', recipe.id);
 
+      // Fetch saves count
+      const { count: savesCount } = await supabase
+        .from('saves')
+        .select('*', { count: 'exact', head: true })
+        .eq('recipe_id', recipe.id);
+
+      // Fetch comments count
+      const { count: commentsCount } = await supabase
+        .from('recipe_comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('recipe_id', recipe.id);
+
       recipesWithDetails.push({
         ...recipe,
         author: recipe.author[0], // Take first (and only) author from array
         ingredients: ingredients || [],
         steps: steps || [],
         categories: categories?.map(c => c.categories[0]) || [], // Take first category from each
+        save_count: savesCount || 0,
+        comment_count: commentsCount || 0,
       });
     }
 

@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - 2025-01-23
+## [Unreleased] - 2025-01-24
 
 ### Added
 - Follow system with social networking features
@@ -48,6 +48,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   2. Extract related IDs (follower_id, user_id, recipe_id)
   3. Fetch related data (profiles, recipes) using IN clauses
   4. Transform and combine data manually
+
+---
+
+## [0.5.0] - 2025-01-24
+
+### Added
+- **Testing Infrastructure**: Set up Vitest with configuration files and comprehensive test suites
+- **Logging Service**: Implemented centralized logging system with environment-aware log levels
+- **Sentry Integration**: Added error tracking for production monitoring
+- **API Validation**: Added Zod schemas for all API endpoints
+- **Recipe Engagement Metrics**: Added save_count and comment_count to recipe data
+- **My Recipes Link**: Added "My Recipes" to main navigation header
+
+### Changed
+- **Login Flow**: Smart redirect - new users go to /profile, existing users to /dashboard
+- **Profile Page**: Removed tabs, now focused on profile info with stat cards linking to appropriate pages
+- **Recipe Card Design**: Redesigned for "My Recipes" with engagement metrics instead of interaction buttons
+- **Route Names**: Renamed `/saved` to `/saved-recipes` for consistency
+
+### Fixed
+- **Infinite Loop**: Fixed useEffect dependency issue in RecipeDetailModal component
+- **Duplicate Sign In Buttons**: Removed redundant sign in link from navigation
+- **Recipe Card Overflow**: Fixed footer overflow with proper flexbox layout and smaller components
+- **Stat Card Navigation**: Fixed links to use correct paths (/connections/followers, /interactions/likes, etc.)
+- **TypeScript Types**: Fixed all remaining `any` types throughout codebase
+
+### Technical Improvements
+- **Type Safety**: Added proper TypeScript interfaces for save_count and comment_count
+- **Performance**: Optimized recipe fetching to include engagement metrics in single query batch
+- **UX Enhancements**: Added tooltips to all action buttons and engagement metrics
+- **Code Quality**: Replaced 430+ console statements with structured logging service
 - **Performance**: Maintained efficiency with batch queries and Map-based lookups
 
 ### Files Modified

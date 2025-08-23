@@ -47,13 +47,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Handle auth state changes
         if (event === 'SIGNED_IN' && session?.user) {
+          // Refresh the page to update server components (like navigation)
+          router.refresh();
+          
           // Only redirect if we're on an auth page
           const currentPath = window.location.pathname;
           if (currentPath === '/auth') {
-            // Navigate to profile
-            router.push('/profile');
+            // Check if user profile is complete
+            const supabase = createClient();
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('username, display_name')
+              .eq('id', session.user.id)
+              .single();
+            
+            // If profile is incomplete (no username or display_name), go to profile
+            // Otherwise go to dashboard
+            if (!profile?.username || !profile?.display_name) {
+              router.push('/profile');
+            } else {
+              router.push('/dashboard');
+            }
           }
         } else if (event === 'SIGNED_OUT') {
+          // Refresh the page to update server components (like navigation)
+          router.refresh();
           // Redirect to home page after sign out
           router.push('/');
         }

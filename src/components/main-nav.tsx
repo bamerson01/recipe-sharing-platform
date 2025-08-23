@@ -26,22 +26,20 @@ export async function MainNav() {
               <Link href="/discover" className="transition-colors hover:text-foreground/80">
                 Discover
               </Link>
+              <Link href="/my-recipes" className="transition-colors hover:text-foreground/80">
+                My Recipes
+              </Link>
               <Link href="/recipes/new" className="transition-colors hover:text-foreground/80">
                 New Recipe
               </Link>
-              <Link href="/saved" className="transition-colors hover:text-foreground/80">
+              <Link href="/saved-recipes" className="transition-colors hover:text-foreground/80">
                 Saved
               </Link>
             </>
           ) : (
-            <>
-              <Link href="/discover" className="transition-colors hover:text-foreground/80">
-                Discover
-              </Link>
-              <Link href="/auth" className="transition-colors hover:text-foreground/80">
-                Sign In
-              </Link>
-            </>
+            <Link href="/discover" className="transition-colors hover:text-foreground/80">
+              Discover
+            </Link>
           )}
         </nav>
 

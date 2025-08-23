@@ -17,7 +17,23 @@ import {
 import { LikeButton } from "@/components/like-button";
 import { SaveButton } from "@/components/save-button";
 import { ShareButton } from "@/components/share-button";
-import { Clock, MoreVertical, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { 
+  Clock, 
+  MoreVertical, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  EyeOff, 
+  Heart, 
+  Bookmark, 
+  MessageCircle 
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { imageSrcFromKey } from "@/lib/images/url";
 import { getRecipeUrl, getProfileUrl } from "@/lib/urls";
 import type { RecipeCardProps } from "@/types/recipe";
@@ -227,45 +243,147 @@ export function RecipeCard({
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex items-center justify-between">
-        {/* Action buttons */}
-        <div className="flex items-center gap-2">
-          <SaveButton
-            recipeId={recipe.id}
-            initialSaved={recipe.is_saved || false}
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-            onSaveChange={(saved) => onSaveChange?.(recipe.id, saved)}
-          />
-          <LikeButton
-            recipeId={recipe.id}
-            initialLikeCount={recipe.like_count}
-            initialLiked={recipe.is_liked}
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-          />
-          <ShareButton
-            recipe={{
-              id: recipe.id,
-              title: recipe.title,
-              summary: recipe.summary,
-              cover_image_key: recipe.cover_image_key,
-              author: recipe.author,
-              categories: recipe.categories
-            }}
-            size="sm"
-            variant="outline"
-            className="text-muted-foreground hover:text-foreground"
-          />
-        </div>
+      <CardFooter className="p-4 pt-0">
+        {isOwner ? (
+          // Owner variant: Show engagement metrics
+          <div className="flex items-center justify-between w-full">
+            {/* Engagement metrics */}
+            <div className="flex items-center gap-3 text-sm">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-muted-foreground cursor-default">
+                      <Heart className="h-4 w-4" />
+                      <span className="font-medium">{recipe.like_count || 0}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Likes</TooltipContent>
+                </Tooltip>
 
-        {/* Timestamp */}
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Clock className="h-4 w-4 mr-1" />
-          <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
-        </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-muted-foreground cursor-default">
+                      <Bookmark className="h-4 w-4" />
+                      <span className="font-medium">{recipe.save_count || 0}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Saves</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-muted-foreground cursor-default">
+                      <MessageCircle className="h-4 w-4" />
+                      <span className="font-medium">{recipe.comment_count || 0}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Comments</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* Quick actions */}
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit?.(recipe.id);
+                      }}
+                      className="h-8 px-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit recipe</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleVisibility?.(recipe.id, recipe.is_public);
+                      }}
+                      className="h-8 px-2"
+                    >
+                      {recipe.is_public ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {recipe.is_public ? 'Make private' : 'Make public'}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="h-8 px-2 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete recipe</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+        ) : (
+          // Default variant: Show interaction buttons
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <SaveButton
+                recipeId={recipe.id}
+                initialSaved={recipe.is_saved || false}
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+                onSaveChange={(saved) => onSaveChange?.(recipe.id, saved)}
+              />
+              <LikeButton
+                recipeId={recipe.id}
+                initialLikeCount={recipe.like_count}
+                initialLiked={recipe.is_liked}
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+              />
+              <ShareButton
+                recipe={{
+                  id: recipe.id,
+                  title: recipe.title,
+                  summary: recipe.summary,
+                  cover_image_key: recipe.cover_image_key,
+                  author: recipe.author,
+                  categories: recipe.categories
+                }}
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+              />
+            </div>
+
+            {/* Timestamp */}
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Clock className="h-3 w-3 mr-1" />
+              <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
+            </div>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

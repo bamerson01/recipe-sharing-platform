@@ -40,7 +40,7 @@ export async function toggleSave(recipeId: number) {
       }
 
       // Revalidate relevant paths
-      revalidatePath('/saved');
+      revalidatePath('/saved-recipes');
       revalidatePath('/dashboard');
       revalidatePath(`/r/${recipeId}`);
 
@@ -64,7 +64,7 @@ export async function toggleSave(recipeId: number) {
       }
 
       // Revalidate relevant paths
-      revalidatePath('/saved');
+      revalidatePath('/saved-recipes');
       revalidatePath('/dashboard');
       revalidatePath(`/r/${recipeId}`);
 

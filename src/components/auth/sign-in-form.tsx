@@ -67,7 +67,7 @@ export function SignInForm({ onSwitchToSignUp }: SignInFormProps) {
           </div>
           <h3 className="text-lg font-semibold mb-2">Welcome back!</h3>
           <p className="text-muted-foreground mb-4">
-            Redirecting you to your profile...
+            Redirecting you...
           </p>
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
         </CardContent>

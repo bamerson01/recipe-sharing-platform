@@ -82,6 +82,18 @@ export async function GET(
       `)
       .eq('recipe_id', recipe.id);
 
+    // Fetch save count
+    const { count: saveCount } = await supabase
+      .from('saves')
+      .select('*', { count: 'exact', head: true })
+      .eq('recipe_id', recipe.id);
+
+    // Fetch comment count
+    const { count: commentCount } = await supabase
+      .from('recipe_comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('recipe_id', recipe.id);
+
     // Check if current user has liked/saved this recipe
     let is_liked = false;
     let is_saved = false;
@@ -127,6 +139,8 @@ export async function GET(
       categories: categories?.map(c => (c.categories as any)) || [],
       ingredients: ingredients || [],
       steps: steps || [],
+      save_count: saveCount || 0,
+      comment_count: commentCount || 0,
       is_liked,
       is_saved
     };

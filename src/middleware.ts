@@ -67,7 +67,6 @@ export async function middleware(request: NextRequest) {
     '/recipes/my',
     '/recipes/edit',
     '/profile',
-    '/saved',
     '/dashboard',
     '/my-recipes',
     '/saved-recipes',
