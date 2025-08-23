@@ -15,6 +15,7 @@ import { RecipeSummary, RecipeFull } from "@/types/recipe";
 import { ShareModal } from "./share-modal";
 import { LikeButton } from "@/components/like-button";
 import { SaveButton } from "@/components/save-button";
+import { FollowButton } from "@/components/follow-button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface RecipeDetailModalProps {
@@ -235,6 +236,15 @@ export function RecipeDetailModal({
                     >
                       {recipe.author.display_name || recipe.author.username || 'Anonymous'}
                     </Link>
+                    {recipe.author.username && (
+                      <FollowButton
+                        username={recipe.author.username}
+                        userId={recipe.author.id}
+                        variant="ghost"
+                        size="sm"
+                        showText={false}
+                      />
+                    )}
                   </div>
                 )}
 

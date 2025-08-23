@@ -42,10 +42,9 @@ export async function GET(request: NextRequest, { params }: Params) {
     });
 
   } catch (error) {
-    console.error('Unexpected error in follow POST:', error);
     return NextResponse.json({ 
       error: 'An unexpected error occurred',
-      details: error instanceof Error ? error.message : String(error)
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     }, { status: 500 });
   }
 }
@@ -91,11 +90,6 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     // Create follow relationship
-    console.log('Attempting to create follow:', {
-      follower_id: user.id,
-      followed_id: targetProfile.id
-    });
-    
     const { data: newFollow, error: insertError } = await supabase
       .from('follows')
       .insert({
@@ -106,11 +100,9 @@ export async function POST(request: NextRequest, { params }: Params) {
       .single();
 
     if (insertError) {
-      console.error('Follow insert error:', insertError);
       return NextResponse.json({ 
         error: 'Failed to follow user',
-        details: insertError.message,
-        code: insertError.code 
+        details: process.env.NODE_ENV === 'development' ? insertError.message : undefined
       }, { status: 500 });
     }
 
@@ -121,10 +113,9 @@ export async function POST(request: NextRequest, { params }: Params) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Unexpected error in follow POST:', error);
     return NextResponse.json({ 
       error: 'An unexpected error occurred',
-      details: error instanceof Error ? error.message : String(error)
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     }, { status: 500 });
   }
 }
@@ -153,11 +144,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     }
 
     // Delete follow relationship
-    console.log('Attempting to delete follow:', {
-      follower_id: user.id,
-      followed_id: targetProfile.id
-    });
-    
     const { error: deleteError } = await supabase
       .from('follows')
       .delete()
@@ -165,11 +151,9 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       .eq('followed_id', targetProfile.id);
 
     if (deleteError) {
-      console.error('Unfollow delete error:', deleteError);
       return NextResponse.json({ 
         error: 'Failed to unfollow user',
-        details: deleteError.message,
-        code: deleteError.code 
+        details: process.env.NODE_ENV === 'development' ? deleteError.message : undefined
       }, { status: 500 });
     }
 
@@ -179,10 +163,9 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     });
 
   } catch (error) {
-    console.error('Unexpected error in follow POST:', error);
     return NextResponse.json({ 
       error: 'An unexpected error occurred',
-      details: error instanceof Error ? error.message : String(error)
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     }, { status: 500 });
   }
 }

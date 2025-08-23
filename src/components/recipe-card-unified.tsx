@@ -17,6 +17,7 @@ import {
 import { LikeButton } from "@/components/like-button";
 import { SaveButton } from "@/components/save-button";
 import { ShareButton } from "@/components/share-button";
+import { FollowButton } from "@/components/follow-button";
 import { 
   Clock, 
   MoreVertical, 
@@ -199,8 +200,8 @@ export const RecipeCard = memo(function RecipeCard({
 
         {/* Author and Date */}
         <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-          <div className="flex items-center">
-            <Avatar className="h-5 w-5 mr-2">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-5 w-5">
               <AvatarImage
                 src={recipe.author.avatar_key
                   ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}`
@@ -219,6 +220,17 @@ export const RecipeCard = memo(function RecipeCard({
             >
               {recipe.author.display_name || recipe.author.username || 'Anonymous'}
             </Link>
+            {recipe.author.username && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <FollowButton
+                  username={recipe.author.username}
+                  userId={recipe.author.id}
+                  variant="ghost"
+                  size="sm"
+                  showText={false}
+                />
+              </div>
+            )}
           </div>
           <span className="text-xs">
             {new Date(recipe.created_at).toLocaleDateString()}
