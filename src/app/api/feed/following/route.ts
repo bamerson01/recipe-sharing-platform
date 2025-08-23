@@ -17,7 +17,7 @@ export async function GET() {
     // First get the list of users the current user follows
     const { data: following, error: followError } = await supabase
       .from('follows')
-      .select('following_id')
+      .select('followed_id')
       .eq('follower_id', user.id);
 
     if (followError) {
@@ -35,7 +35,7 @@ export async function GET() {
       });
     }
 
-    const followingIds = following.map(f => f.following_id);
+    const followingIds = following.map(f => f.followed_id);
 
     // Get recipes from users the current user follows
     const { data: recipes, error } = await supabase

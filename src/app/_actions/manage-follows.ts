@@ -33,7 +33,7 @@ export async function followUser(targetUserId: string) {
     // Validate input
     const validation = await validateRequest(FollowUserSchema, { userId: targetUserId });
     if (!validation.success) {
-      return { success: false, error: 'Invalid user ID' };
+      return { success: false, error: 'Invalid user ID: ' + validation.errors.issues.map(e => e.message).join(', ') };
     }
 
     // Check if already following
@@ -41,7 +41,7 @@ export async function followUser(targetUserId: string) {
       .from('follows')
       .select('id')
       .eq('follower_id', user.id)
-      .eq('following_id', targetUserId)
+      .eq('followed_id', targetUserId)
       .single();
 
     if (existingFollow) {
@@ -53,7 +53,7 @@ export async function followUser(targetUserId: string) {
       .from('follows')
       .insert({
         follower_id: user.id,
-        following_id: targetUserId,
+        followed_id: targetUserId,
       });
 
     if (followError) {      return { success: false, error: 'Failed to follow user' };
@@ -84,7 +84,7 @@ export async function unfollowUser(targetUserId: string) {
     // Validate input
     const validation = await validateRequest(FollowUserSchema, { userId: targetUserId });
     if (!validation.success) {
-      return { success: false, error: 'Invalid user ID' };
+      return { success: false, error: 'Invalid user ID: ' + validation.errors.issues.map(e => e.message).join(', ') };
     }
 
     // Remove follow relationship
@@ -92,7 +92,7 @@ export async function unfollowUser(targetUserId: string) {
       .from('follows')
       .delete()
       .eq('follower_id', user.id)
-      .eq('following_id', targetUserId);
+      .eq('followed_id', targetUserId);
 
     if (unfollowError) {      return { success: false, error: 'Failed to unfollow user' };
     }
@@ -116,7 +116,11 @@ export async function getFollowers(userId: string, page: number = 1, limit: numb
     // Validate input
     const validated = getFollowsSchema.safeParse({ userId, page, limit });
     if (!validated.success) {
-      return { success: false, error: 'Invalid parameters' };
+      // Debug validation error in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('getFollowers validation failed:', { userId, page, limit }, validated.error.issues);
+      }
+      return { success: false, error: 'Invalid parameters: ' + validated.error.issues.map(e => e.message).join(', ') };
     }
 
     const { userId: validatedUserId, page: validatedPage, limit: validatedLimit } = validated.data;
@@ -130,11 +134,15 @@ export async function getFollowers(userId: string, page: number = 1, limit: numb
         created_at,
         follower_id
       `, { count: 'exact' })
-      .eq('following_id', validatedUserId)
+      .eq('followed_id', validatedUserId)
       .order('created_at', { ascending: false })
       .range(offset, offset + validatedLimit - 1);
 
-    if (followersError) {      return { success: false, error: 'Failed to fetch followers' };
+    if (followersError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('getFollowers database query failed:', followersError);
+      }
+      return { success: false, error: 'Failed to fetch followers: ' + followersError.message };
     }
 
     // Transform data - fetch profile data separately
@@ -148,7 +156,11 @@ export async function getFollowers(userId: string, page: number = 1, limit: numb
         .select('id, username, display_name, avatar_key, bio')
         .in('id', followerIds);
       
-      if (profilesError) {        return { success: false, error: 'Failed to fetch follower profiles' };
+      if (profilesError) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('getFollowers profiles query failed:', profilesError);
+        }
+        return { success: false, error: 'Failed to fetch follower profiles: ' + profilesError.message };
       }
       
       // Create a map for quick lookup
@@ -190,7 +202,11 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
     // Validate input
     const validated = getFollowsSchema.safeParse({ userId, page, limit });
     if (!validated.success) {
-      return { success: false, error: 'Invalid parameters' };
+      // Debug validation error in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('getFollowing validation failed:', { userId, page, limit }, validated.error.issues);
+      }
+      return { success: false, error: 'Invalid parameters: ' + validated.error.issues.map(e => e.message).join(', ') };
     }
 
     const { userId: validatedUserId, page: validatedPage, limit: validatedLimit } = validated.data;
@@ -202,19 +218,23 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
       .select(`
         id,
         created_at,
-        following_id
+        followed_id
       `, { count: 'exact' })
       .eq('follower_id', validatedUserId)
       .order('created_at', { ascending: false })
       .range(offset, offset + validatedLimit - 1);
 
-    if (followingError) {      return { success: false, error: 'Failed to fetch following' };
+    if (followingError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('getFollowing database query failed:', followingError);
+      }
+      return { success: false, error: 'Failed to fetch following: ' + followingError.message };
     }
 
     // Transform data - fetch profile data separately
     const transformedFollowing = [];
     if (following && following.length > 0) {
-      const followedIds = following.map(f => f.following_id);
+      const followedIds = following.map(f => f.followed_id);
       
       // Fetch profile data for all followed users
       const { data: profiles, error: profilesError } = await supabase
@@ -222,7 +242,11 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
         .select('id, username, display_name, avatar_key, bio')
         .in('id', followedIds);
       
-      if (profilesError) {        return { success: false, error: 'Failed to fetch followed profiles' };
+      if (profilesError) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('getFollowing profiles query failed:', profilesError);
+        }
+        return { success: false, error: 'Failed to fetch followed profiles: ' + profilesError.message };
       }
       
       // Create a map for quick lookup
@@ -230,7 +254,7 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
       
       // Transform the data
       for (const follow of following) {
-        const profile = profileMap.get(follow.following_id);
+        const profile = profileMap.get(follow.followed_id);
         if (profile) {
           transformedFollowing.push({
             id: profile.id,
@@ -264,6 +288,9 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('getRecentFromFollowing auth failed:', userError?.message);
+      }
       return { success: false, error: 'Unauthorized' };
     }
 
@@ -272,10 +299,14 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
     // First get the list of users the current user follows
     const { data: followingUsers, error: followingError } = await supabase
       .from('follows')
-      .select('following_id')
+      .select('followed_id')
       .eq('follower_id', user.id);
 
-    if (followingError) {      return { success: false, error: 'Failed to fetch following users' };
+    if (followingError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('getRecentFromFollowing following query failed:', followingError);
+      }
+      return { success: false, error: 'Failed to fetch following users: ' + followingError.message };
     }
 
     // If not following anyone, return empty result
@@ -290,7 +321,7 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
     }
 
     // Extract the user IDs
-    const followedUserIds = followingUsers.map(f => f.following_id);
+    const followedUserIds = followingUsers.map(f => f.followed_id);
 
     // Get recipes from followed users
     const { data: recipes, error: recipesError, count } = await supabase
@@ -305,7 +336,7 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
         is_public,
         created_at,
         updated_at,
-        author:profiles!recipes_author_id_fkey(
+        author:profiles(
           id,
           username,
           display_name,
@@ -317,7 +348,11 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (recipesError) {      return { success: false, error: 'Failed to fetch recipes' };
+    if (recipesError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('getRecentFromFollowing recipes query failed:', recipesError);
+      }
+      return { success: false, error: 'Failed to fetch recipes: ' + recipesError.message };
     }
 
     // Transform data

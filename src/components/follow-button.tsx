@@ -63,12 +63,16 @@ export function FollowButton({
     const newFollowState = !isFollowing;
 
     try {
+      console.log(`Attempting to ${newFollowState ? 'follow' : 'unfollow'} user: ${username}`);
       const response = await fetch(`/api/users/${username}/follow`, {
         method: newFollowState ? "POST" : "DELETE"
       });
 
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
       if (response.ok) {
-        const data = await response.json();
         setIsFollowing(newFollowState);
         onFollowChange?.(newFollowState);
         toast.success(data.message);
@@ -76,10 +80,15 @@ export function FollowButton({
         // Refresh the page to update follower counts
         router.refresh();
       } else {
-        const error = await response.json();
-        toast.error(error.error || "Failed to update follow status");
+        console.error('Follow/unfollow error:', data);
+        toast.error(data.error || "Failed to update follow status");
+        if (data.details) {
+          console.error('Error details:', data.details);
+        }
       }
-    } catch (error) {      toast.error("Failed to update follow status");
+    } catch (error) {
+      console.error('Fetch error:', error);
+      toast.error("Failed to update follow status");
     } finally {
       setUpdating(false);
     }

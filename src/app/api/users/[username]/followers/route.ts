@@ -27,55 +27,67 @@ export async function GET(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get followers with their profile info
+    // Get followers
     const { data: followers, error, count } = await supabase
       .from('follows')
       .select(`
         id,
         created_at,
-        follower:profiles!follows_follower_id_fkey(
-          id,
-          username,
-          display_name,
-          avatar_key,
-          bio
-        )
+        follower_id
       `, { count: 'exact' })
-      .eq('following_id', targetProfile.id)
+      .eq('followed_id', targetProfile.id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) {      return NextResponse.json({ error: 'Failed to fetch followers' }, { status: 500 });
     }
 
-    // Get current user to check if they follow these users
-    const { data: { user } } = await supabase.auth.getUser();
-    const followingStatus: Record<string, boolean> = {};
+    // Get profile data for followers
+    let transformedFollowers: any[] = [];
+    
+    if (followers && followers.length > 0) {
+      const followerIds = followers.map(f => f.follower_id);
+      
+      // Fetch profile data for all followers
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_key, bio')
+        .in('id', followerIds);
+      
+      // Get current user to check if they follow these users
+      const { data: { user } } = await supabase.auth.getUser();
+      const followingStatus: Record<string, boolean> = {};
 
-    if (user && followers && followers.length > 0) {
-      const followerIds = followers.map(f => (f.follower as any).id);
-      const { data: userFollows } = await supabase
-        .from('follows')
-        .select('following_id')
-        .eq('follower_id', user.id)
-        .in('following_id', followerIds);
+      if (user && profiles && profiles.length > 0) {
+        const { data: userFollows } = await supabase
+          .from('follows')
+          .select('followed_id')
+          .eq('follower_id', user.id)
+          .in('followed_id', followerIds);
 
-      const followingSet = new Set(userFollows?.map(f => f.following_id) || []);
-      followerIds.forEach(id => {
-        followingStatus[id] = followingSet.has(id);
-      });
-    }
-
-    // Transform the data
-    const transformedFollowers = followers?.map(f => ({
-      id: f.id,
-      created_at: f.created_at,
-      user: {
-        ...(f.follower as any),
-        isFollowing: followingStatus[(f.follower as any).id] || false,
-        isCurrentUser: user?.id === (f.follower as any).id
+        const followingSet = new Set(userFollows?.map(f => f.followed_id) || []);
+        followerIds.forEach(id => {
+          followingStatus[id] = followingSet.has(id);
+        });
       }
-    })) || [];
+
+      // Create a map for quick lookup
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      
+      // Transform the data
+      transformedFollowers = followers.map(f => {
+        const profile = profileMap.get(f.follower_id);
+        return {
+          id: f.id,
+          created_at: f.created_at,
+          user: profile ? {
+            ...profile,
+            isFollowing: followingStatus[profile.id] || false,
+            isCurrentUser: user?.id === profile.id
+          } : null
+        };
+      }).filter(f => f.user !== null);
+    }
 
     return NextResponse.json({
       user: {
