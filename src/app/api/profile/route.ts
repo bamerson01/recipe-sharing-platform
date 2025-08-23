@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/db/server";
 import { ensureProfile } from "@/lib/db/ensure-profile";
+import { UpdateProfileSchema, validateRequest, formatZodErrors } from "@/lib/validation/api-schemas";
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,16 +69,18 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await request.json();
-    const { display_name, username, bio } = body;
+    const validation = await validateRequest(UpdateProfileSchema, body);
 
-    // Validate required fields
-    if (!display_name || !username) {
+    if (!validation.success) {
       return NextResponse.json({
-        error: 'Display name and username are required'
+        error: 'Validation failed',
+        errors: formatZodErrors(validation.errors)
       }, { status: 400 });
     }
+
+    const { display_name, username, bio } = validation.data;
 
     // Check if username is already taken by another user
     if (username) {

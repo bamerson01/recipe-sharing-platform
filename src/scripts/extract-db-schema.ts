@@ -20,18 +20,48 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 });
 
+interface DatabaseColumn {
+  column_name: string;
+  data_type: string;
+  is_nullable: string;
+  column_default: string | null;
+  character_maximum_length?: number;
+}
+
+interface ForeignKey {
+  constraint_name: string;
+  column_name: string;
+  referenced_table_name: string;
+  referenced_column_name: string;
+}
+
+interface TableSchema {
+  columns: DatabaseColumn[];
+  foreignKeys: ForeignKey[];
+}
+
+interface DatabaseSchema {
+  timestamp: string;
+  tables: Record<string, TableSchema>;
+  policies: any[];
+  functions: any[];
+  triggers: any[];
+  indexes: any[];
+  sequences: any[];
+}
+
 async function extractDatabaseSchema() {
   try {
     console.log('🔍 Extracting database schema...');
 
-    const schema: any = {
+    const schema: DatabaseSchema = {
       timestamp: new Date().toISOString(),
       tables: {},
-      policies: {},
-      functions: {},
-      triggers: {},
-      indexes: {},
-      sequences: {}
+      policies: [],
+      functions: [],
+      triggers: [],
+      indexes: [],
+      sequences: []
     };
 
     // Get all tables
@@ -180,7 +210,7 @@ async function extractDatabaseSchema() {
   }
 }
 
-function generateMarkdownSchema(schema: any): string {
+function generateMarkdownSchema(schema: DatabaseSchema): string {
   let markdown = `# Current Database Schema
 
 **Extracted on:** ${new Date(schema.timestamp).toLocaleString()}
@@ -195,7 +225,7 @@ function generateMarkdownSchema(schema: any): string {
 
     // Columns
     markdown += '**Columns:**\n';
-    for (const column of (tableData as any).columns) {
+    for (const column of tableData.columns) {
       const nullable = column.is_nullable === 'YES' ? 'NULL' : 'NOT NULL';
       const defaultValue = column.column_default ? ` DEFAULT ${column.column_default}` : '';
       const maxLength = column.character_maximum_length ? `(${column.character_maximum_length})` : '';
@@ -203,9 +233,9 @@ function generateMarkdownSchema(schema: any): string {
     }
 
     // Foreign Keys
-    if ((tableData as any).foreignKeys.length > 0) {
+    if (tableData.foreignKeys.length > 0) {
       markdown += '\n**Foreign Keys:**\n';
-      for (const fk of (tableData as any).foreignKeys) {
+      for (const fk of tableData.foreignKeys) {
         markdown += `- \`${fk.column_name}\` → \`${fk.referenced_table_name}.${fk.referenced_column_name}\`\n`;
       }
     }

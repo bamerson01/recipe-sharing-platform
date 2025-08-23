@@ -18,22 +18,28 @@ export async function MainNav() {
 
         {/* Nav cluster - hidden on mobile, takes available space on desktop */}
         <nav className="hidden md:flex flex-1 items-center gap-x-6 text-sm font-medium">
-          <Link href="/explore" className="transition-colors hover:text-foreground/80">
-            Explore
-          </Link>
-          {user && (
+          {user ? (
             <>
-              <Link href="/feed" className="transition-colors hover:text-foreground/80">
-                Feed
+              <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
+                Dashboard
+              </Link>
+              <Link href="/discover" className="transition-colors hover:text-foreground/80">
+                Discover
               </Link>
               <Link href="/recipes/new" className="transition-colors hover:text-foreground/80">
                 New Recipe
               </Link>
-              <Link href="/recipes/my" className="transition-colors hover:text-foreground/80">
-                My Recipes
-              </Link>
               <Link href="/saved" className="transition-colors hover:text-foreground/80">
                 Saved
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/discover" className="transition-colors hover:text-foreground/80">
+                Discover
+              </Link>
+              <Link href="/auth" className="transition-colors hover:text-foreground/80">
+                Sign In
               </Link>
             </>
           )}

@@ -74,9 +74,19 @@ export default function UserProfilePage() {
         // Load user profile
         const profileResult = await fetchUserProfile(username);
         if (profileResult.ok && profileResult.profile) {
-          setProfile(profileResult.profile);
-          setFollowerCount(profileResult.profile.follower_count || 0);
-          setFollowingCount(profileResult.profile.following_count || 0);
+          const profileData = profileResult.profile as any;
+          setProfile({
+            id: profileData.id,
+            username: profileData.username,
+            display_name: profileData.display_name,
+            avatar_key: profileData.avatar_key,
+            bio: profileData.bio,
+            follower_count: profileData.follower_count || 0,
+            following_count: profileData.following_count || 0,
+            created_at: profileData.created_at
+          });
+          setFollowerCount(profileData.follower_count || 0);
+          setFollowingCount(profileData.following_count || 0);
 
           // Load user's recipes
           const recipesResult = await fetchUserRecipes(profileResult.profile.id);

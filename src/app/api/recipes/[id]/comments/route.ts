@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/db/server';
+import { CreateCommentSchema, validateRequest, formatZodErrors } from '@/lib/validation/api-schemas';
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -116,13 +117,19 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await request.json();
-    const { text, parentId } = body;
+    const validation = await validateRequest(CreateCommentSchema, { content: body.text || body.content });
 
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      return NextResponse.json({ error: 'Comment text is required' }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        errors: formatZodErrors(validation.errors)
+      }, { status: 400 });
     }
+
+    const { content } = validation.data;
+    const { parentId } = body;
 
     // Check if recipe exists and is accessible
     const { data: recipe, error: recipeError } = await supabase
@@ -146,7 +153,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         recipe_id: recipeId,
         user_id: user.id,
         parent_id: parentId || null,
-        body: text.trim()
+        body: content.trim()
       })
       .select(`
         id,
@@ -206,18 +213,23 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await request.json();
-    const { text } = body;
+    const validation = await validateRequest(CreateCommentSchema, { content: body.text || body.content });
 
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      return NextResponse.json({ error: 'Comment text is required' }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        errors: formatZodErrors(validation.errors)
+      }, { status: 400 });
     }
+
+    const { content } = validation.data;
 
     // Update the comment (RLS will ensure only owner can update)
     const { data: updatedComment, error: updateError } = await supabase
       .from('recipe_comments')
-      .update({ body: text.trim() })
+      .update({ body: content.trim() })
       .eq('id', commentId)
       .eq('user_id', user.id) // Extra safety check
       .select(`

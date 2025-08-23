@@ -52,7 +52,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     // Get current user to check if they follow these users
     const { data: { user } } = await supabase.auth.getUser();
-    let followingStatus: Record<string, boolean> = {};
+    const followingStatus: Record<string, boolean> = {};
 
     if (user && following && following.length > 0) {
       const followingIds = following.map(f => (f.following as any).id);

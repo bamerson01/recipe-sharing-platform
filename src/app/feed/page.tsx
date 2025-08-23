@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeCard } from "@/components/recipe-card-unified";
 import { RecipeDetailModal } from "@/components/recipe-detail-modal-unified";
@@ -55,7 +55,7 @@ export default function FeedPage() {
   const loadFeedData = async () => {
     try {
       setLoading(true);
-      
+
       // Load following feed
       const followingResponse = await fetch('/api/feed/following');
       if (followingResponse.ok) {
@@ -240,11 +240,11 @@ export default function FeedPage() {
   );
 }
 
-function RecipeGrid({ 
-  recipes, 
-  onViewRecipe 
-}: { 
-  recipes: Recipe[]; 
+function RecipeGrid({
+  recipes,
+  onViewRecipe
+}: {
+  recipes: Recipe[];
   onViewRecipe: (recipe: Recipe) => void;
 }) {
   if (recipes.length === 0) {
@@ -268,7 +268,12 @@ function RecipeGrid({
             difficulty: recipe.difficulty || null,
             prep_time: recipe.prep_time || null,
             cook_time: recipe.cook_time || null,
-            author: recipe.author || {
+            author: recipe.author ? {
+              id: recipe.author.id || '',
+              display_name: recipe.author.display_name || null,
+              username: recipe.author.username || null,
+              avatar_key: recipe.author.avatar_key || null
+            } : {
               id: '',
               display_name: null,
               username: null,

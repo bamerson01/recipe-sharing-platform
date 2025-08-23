@@ -85,7 +85,7 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
   try {
     const supabase = await getServerSupabase();
 
-    // Fetch saved recipes with recipe details
+    // Fetch saved recipes with all details in a single query
     const { data: saves, error: savesError } = await supabase
       .from('saves')
       .select(`
@@ -98,6 +98,9 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
           cover_image_key,
           is_public,
           like_count,
+          difficulty,
+          prep_time,
+          cook_time,
           created_at,
           updated_at,
           author:profiles!inner(
@@ -105,6 +108,23 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
             display_name,
             username,
             avatar_key
+          ),
+          recipe_ingredients(
+            id,
+            position,
+            text
+          ),
+          recipe_steps(
+            id,
+            position,
+            text
+          ),
+          recipe_categories(
+            categories(
+              id,
+              name,
+              slug
+            )
           )
         )
       `)
@@ -117,48 +137,20 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
       return { success: false, error: 'Failed to fetch saved recipes' };
     }
 
-    // Fetch additional details for each recipe
-    const recipesWithDetails = await Promise.all(
-      (saves || []).map(async (save: any) => {
-        const recipe = Array.isArray(save.recipe) ? save.recipe[0] : save.recipe;
-
-        // Fetch ingredients
-        const { data: ingredients } = await supabase
-          .from('recipe_ingredients')
-          .select('id, position, text')
-          .eq('recipe_id', recipe.id)
-          .order('position');
-
-        // Fetch steps
-        const { data: steps } = await supabase
-          .from('recipe_steps')
-          .select('id, position, text')
-          .eq('recipe_id', recipe.id)
-          .order('position');
-
-        // Fetch categories
-        const { data: categories } = await supabase
-          .from('recipe_categories')
-          .select(`
-            category_id,
-            categories!inner(
-              id,
-              name,
-              slug
-            )
-          `)
-          .eq('recipe_id', recipe.id);
-
-        return {
-          ...recipe,
-          author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
-          savedAt: save.created_at,
-          ingredients: ingredients || [],
-          steps: steps || [],
-          categories: categories?.map((c: any) => Array.isArray(c.categories) ? c.categories[0] : c.categories) || [],
-        };
-      })
-    );
+    // Transform the data structure
+    const recipesWithDetails = (saves || []).map((save: any) => {
+      const recipe = Array.isArray(save.recipe) ? save.recipe[0] : save.recipe;
+      
+      return {
+        ...recipe,
+        author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
+        savedAt: save.created_at,
+        ingredients: recipe.recipe_ingredients || [],
+        steps: recipe.recipe_steps || [],
+        categories: recipe.recipe_categories?.map((rc: any) => rc.categories).filter(Boolean) || [],
+        is_saved: true // Mark as saved since these are from the saves table
+      };
+    });
 
     return { success: true, recipes: recipesWithDetails };
 

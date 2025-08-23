@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/db/server';
+import { ToggleLikeSchema, validateRequest } from '@/lib/validation/api-schemas';
 
 export async function GET(
   request: NextRequest,
@@ -15,10 +16,11 @@ export async function GET(
       return NextResponse.json({ liked: false });
     }
 
-    const recipeId = parseInt(id);
-    if (isNaN(recipeId)) {
+    const validation = await validateRequest(ToggleLikeSchema, { recipeId: id });
+    if (!validation.success) {
       return NextResponse.json({ error: 'Invalid recipe ID' }, { status: 400 });
     }
+    const { recipeId } = validation.data;
 
     // Check if user liked this recipe
     const { data: like, error: likeError } = await supabase
@@ -57,10 +59,11 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const recipeId = parseInt(id);
-    if (isNaN(recipeId)) {
+    const validation = await validateRequest(ToggleLikeSchema, { recipeId: id });
+    if (!validation.success) {
       return NextResponse.json({ error: 'Invalid recipe ID' }, { status: 400 });
     }
+    const { recipeId } = validation.data;
 
     // Check if recipe exists and is public
     const { data: recipe, error: recipeError } = await supabase

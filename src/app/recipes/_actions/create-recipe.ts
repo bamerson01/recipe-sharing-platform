@@ -3,10 +3,10 @@
 import { z } from 'zod';
 import { getServerSupabase } from '@/lib/db/server';
 import { revalidatePath } from 'next/cache';
-import { RecipeInput } from '@/lib/validation/recipe';
+import { CreateRecipeSchema } from '@/lib/validation/api-schemas';
 import { slugify, generateUniqueSlug } from '@/lib/utils/slugify';
 
-const CreateRecipeInput = RecipeInput.extend({
+const CreateRecipeInput = CreateRecipeSchema.extend({
   imageFile: z.any().optional(), // File validation doesn't work in server actions
 });
 
@@ -17,13 +17,13 @@ export async function createRecipe(formData: FormData) {
     const rawData = {
       title: formData.get('title'),
       summary: formData.get('summary') || undefined,
-      isPublic: formData.get('isPublic') === 'on',
-      difficulty: formData.get('difficulty') || null,
-      prepTime: formData.get('prepTime') ? parseInt(formData.get('prepTime') as string, 10) : null,
-      cookTime: formData.get('cookTime') ? parseInt(formData.get('cookTime') as string, 10) : null,
+      is_public: formData.get('isPublic') === 'on',
+      difficulty: formData.get('difficulty') as 'easy' | 'medium' | 'hard' | null,
+      prep_time: formData.get('prepTime') ? parseInt(formData.get('prepTime') as string, 10) : undefined,
+      cook_time: formData.get('cookTime') ? parseInt(formData.get('cookTime') as string, 10) : undefined,
       ingredients: JSON.parse(formData.get('ingredients') as string),
       steps: JSON.parse(formData.get('steps') as string),
-      categoryIds: JSON.parse(formData.get('categoryIds') as string),
+      category_ids: JSON.parse(formData.get('categoryIds') as string),
       imageFile: imageFile instanceof File ? imageFile : null,
     };
     
@@ -136,10 +136,10 @@ export async function createRecipe(formData: FormData) {
       slug,
       summary: parsed.data.summary,
       cover_image_key: imagePath,
-      is_public: parsed.data.isPublic,
+      is_public: parsed.data.is_public,
       difficulty: parsed.data.difficulty,
-      prep_time: parsed.data.prepTime,
-      cook_time: parsed.data.cookTime,
+      prep_time: parsed.data.prep_time,
+      cook_time: parsed.data.cook_time,
     });
     
     const { data: recipe, error: recipeError } = await supabase
@@ -150,10 +150,10 @@ export async function createRecipe(formData: FormData) {
         slug,
         summary: parsed.data.summary,
         cover_image_key: imagePath,
-        is_public: parsed.data.isPublic,
+        is_public: parsed.data.is_public,
         difficulty: parsed.data.difficulty || null,
-        prep_time: parsed.data.prepTime || null,
-        cook_time: parsed.data.cookTime || null,
+        prep_time: parsed.data.prep_time || null,
+        cook_time: parsed.data.cook_time || null,
       })
       .select()
       .single();
@@ -168,7 +168,7 @@ export async function createRecipe(formData: FormData) {
       const ingredientsData = parsed.data.ingredients.map((ing, index) => ({
         recipe_id: recipe.id,
         position: index,
-        text: ing.text.trim(),
+        text: typeof ing === 'string' ? ing.trim() : ing.text.trim(),
       }));
 
       const { error: ingredientsError } = await supabase
@@ -186,7 +186,7 @@ export async function createRecipe(formData: FormData) {
       const stepsData = parsed.data.steps.map((step, index) => ({
         recipe_id: recipe.id,
         position: index,
-        text: step.text.trim(),
+        text: typeof step === 'string' ? step.trim() : step.text.trim(),
       }));
 
       const { error: stepsError } = await supabase
@@ -200,8 +200,8 @@ export async function createRecipe(formData: FormData) {
     }
 
     // Insert category relationships
-    if (parsed.data.categoryIds && parsed.data.categoryIds.length > 0) {
-      const categoryData = parsed.data.categoryIds.map(categoryId => ({
+    if (parsed.data.category_ids && parsed.data.category_ids.length > 0) {
+      const categoryData = parsed.data.category_ids.map(categoryId => ({
         recipe_id: recipe.id,
         category_id: categoryId,
       }));

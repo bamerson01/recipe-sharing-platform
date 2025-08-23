@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/db/server';
+import { ToggleSaveSchema, validateRequest } from '@/lib/validation/api-schemas';
 
 export async function GET(
   request: NextRequest,
@@ -15,10 +16,11 @@ export async function GET(
       return NextResponse.json({ saved: false });
     }
 
-    const recipeId = parseInt(id);
-    if (isNaN(recipeId)) {
+    const validation = await validateRequest(ToggleSaveSchema, { recipeId: id });
+    if (!validation.success) {
       return NextResponse.json({ error: 'Invalid recipe ID' }, { status: 400 });
     }
+    const { recipeId } = validation.data;
 
     // Check if user saved this recipe
     const { data: save, error: saveError } = await supabase
@@ -57,10 +59,11 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const recipeId = parseInt(id);
-    if (isNaN(recipeId)) {
+    const validation = await validateRequest(ToggleSaveSchema, { recipeId: id });
+    if (!validation.success) {
       return NextResponse.json({ error: 'Invalid recipe ID' }, { status: 400 });
     }
+    const { recipeId } = validation.data;
 
     // Check if recipe exists
     const { data: recipe, error: recipeError } = await supabase

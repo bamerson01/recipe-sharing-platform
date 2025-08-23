@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/db/server';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const supabase = await getServerSupabase();
     
@@ -21,7 +21,6 @@ export async function GET(request: Request) {
       .eq('follower_id', user.id);
 
     if (followError) {
-      console.error('Error fetching follows:', followError);
       return NextResponse.json(
         { error: 'Failed to fetch follows' },
         { status: 500 }
@@ -74,7 +73,6 @@ export async function GET(request: Request) {
       .limit(50);
 
     if (error) {
-      console.error('Error fetching following feed:', error);
       return NextResponse.json(
         { error: 'Failed to fetch feed' },
         { status: 500 }
@@ -87,7 +85,14 @@ export async function GET(request: Request) {
       const author = Array.isArray(recipe.author) ? recipe.author[0] : recipe.author;
       
       // Handle categories
-      const categories = recipe.categories?.map((rc: any) => ({
+      interface RecipeCategory {
+        category: {
+          id: number;
+          name: string;
+          slug: string;
+        }
+      }
+      const categories = recipe.categories?.map((rc: RecipeCategory) => ({
         id: rc.category.id,
         name: rc.category.name,
         slug: rc.category.slug
@@ -105,7 +110,6 @@ export async function GET(request: Request) {
       count: formattedRecipes.length 
     });
   } catch (error) {
-    console.error('Error in following feed:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

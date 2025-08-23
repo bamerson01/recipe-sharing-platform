@@ -3,15 +3,13 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChefHat, Plus, X, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
+import { ChefHat, Plus, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
@@ -21,17 +19,7 @@ import { RecipeInput, RecipeInputType } from "@/lib/validation/recipe";
 
 type RecipeFormData = RecipeInputType;
 
-interface Ingredient {
-  id: string;
-  text: string;
-  position: number;
-}
 
-interface Step {
-  id: string;
-  text: string;
-  position: number;
-}
 
 function NewRecipeForm() {
   const { user } = useAuth();
@@ -322,9 +310,9 @@ function NewRecipeForm() {
                   type="number"
                   min="0"
                   placeholder="e.g., 15"
-                  {...form.register("prepTime", { 
+                  {...form.register("prepTime", {
                     setValueAs: (v) => v === '' ? null : parseInt(v, 10),
-                    valueAsNumber: true 
+                    valueAsNumber: true
                   })}
                 />
               </div>
@@ -336,9 +324,9 @@ function NewRecipeForm() {
                   type="number"
                   min="0"
                   placeholder="e.g., 30"
-                  {...form.register("cookTime", { 
+                  {...form.register("cookTime", {
                     setValueAs: (v) => v === '' ? null : parseInt(v, 10),
-                    valueAsNumber: true 
+                    valueAsNumber: true
                   })}
                 />
               </div>
