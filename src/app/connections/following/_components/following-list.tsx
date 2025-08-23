@@ -131,7 +131,7 @@ export function FollowingList({ userId }: FollowingListProps) {
             Start following creators to see their latest recipes on your dashboard
           </p>
           <Button asChild>
-            <Link href="/discover">
+            <Link href="/recipes">
               <ChefHat className="mr-2 h-4 w-4" />
               Explore Creators
             </Link>

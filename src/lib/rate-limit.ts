@@ -5,31 +5,84 @@ interface RateLimitConfig {
   maxRequests: number; // Maximum requests per interval
 }
 
-// Simple in-memory rate limiter (for production, use Redis or similar)
-const requestCounts = new Map<string, { count: number; resetTime: number }>();
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+// Simple in-memory rate limiter with LRU-like cleanup
+// For production, consider using Redis or a database-backed solution
+class RateLimitStore {
+  private store = new Map<string, RateLimitEntry>();
+  private maxSize = 5000; // Maximum number of entries to prevent memory exhaustion
+  private cleanupInterval = 60000; // Cleanup every minute
+  private lastCleanup = Date.now();
+
+  get(key: string): RateLimitEntry | undefined {
+    this.periodicCleanup();
+    return this.store.get(key);
+  }
+
+  set(key: string, value: RateLimitEntry): void {
+    this.periodicCleanup();
+    
+    // If store is at capacity, remove oldest entries
+    if (this.store.size >= this.maxSize && !this.store.has(key)) {
+      const toDelete = Math.floor(this.maxSize * 0.2); // Remove 20% of entries
+      const entries = Array.from(this.store.entries())
+        .sort((a, b) => a[1].resetTime - b[1].resetTime);
+      
+      for (let i = 0; i < toDelete && i < entries.length; i++) {
+        this.store.delete(entries[i][0]);
+      }
+    }
+    
+    this.store.set(key, value);
+  }
+
+  private periodicCleanup(): void {
+    const now = Date.now();
+    
+    // Only run cleanup if enough time has passed
+    if (now - this.lastCleanup < this.cleanupInterval) {
+      return;
+    }
+    
+    this.lastCleanup = now;
+    
+    // Remove expired entries
+    for (const [key, value] of this.store.entries()) {
+      if (value.resetTime < now) {
+        this.store.delete(key);
+      }
+    }
+  }
+
+  clear(): void {
+    this.store.clear();
+  }
+
+  get size(): number {
+    return this.store.size;
+  }
+}
+
+const rateLimitStore = new RateLimitStore();
 
 export function rateLimit(config: RateLimitConfig = { interval: 60000, maxRequests: 60 }) {
   return async function rateLimitMiddleware(request: NextRequest) {
     // Get client identifier (IP address or user ID)
-    const clientId = request.headers.get('x-forwarded-for') || 
+    const clientId = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
                     request.headers.get('x-real-ip') || 
+                    request.headers.get('cf-connecting-ip') || // Cloudflare
                     'anonymous';
     
     const now = Date.now();
-    const clientData = requestCounts.get(clientId);
-    
-    // Clean up old entries periodically
-    if (requestCounts.size > 10000) {
-      for (const [key, value] of requestCounts.entries()) {
-        if (value.resetTime < now) {
-          requestCounts.delete(key);
-        }
-      }
-    }
+    const clientData = rateLimitStore.get(clientId);
     
     if (!clientData || clientData.resetTime < now) {
       // First request or time window expired
-      requestCounts.set(clientId, {
+      rateLimitStore.set(clientId, {
         count: 1,
         resetTime: now + config.interval
       });
@@ -48,6 +101,8 @@ export function rateLimit(config: RateLimitConfig = { interval: 60000, maxReques
     
     // Increment counter
     clientData.count++;
+    rateLimitStore.set(clientId, clientData);
+    
     return { 
       allowed: true, 
       remaining: config.maxRequests - clientData.count 

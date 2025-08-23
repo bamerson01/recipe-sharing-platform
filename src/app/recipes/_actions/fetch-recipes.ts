@@ -182,6 +182,9 @@ export async function fetchRecipeBySlug(slug: string, userId?: string) {
         cover_image_key,
         is_public,
         like_count,
+        difficulty,
+        prep_time,
+        cook_time,
         created_at,
         updated_at,
         author_id,
@@ -246,6 +249,9 @@ export async function fetchRecipeBySlug(slug: string, userId?: string) {
 
     const recipeWithDetails: RecipeWithDetails & { isLiked: boolean } = {
       ...recipe,
+      difficulty: recipe.difficulty || null,
+      prep_time: recipe.prep_time || null,
+      cook_time: recipe.cook_time || null,
       author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
       ingredients: ingredients || [],
       steps: steps || [],
@@ -276,6 +282,9 @@ export async function fetchPublicRecipes(limit = 20, offset = 0, userId?: string
         cover_image_key,
         is_public,
         like_count,
+        difficulty,
+        prep_time,
+        cook_time,
         created_at,
         updated_at,
         author:profiles!inner(
@@ -371,6 +380,9 @@ export async function fetchRecipeById(recipeId: number, userId?: string) {
         cover_image_key,
         is_public,
         like_count,
+        difficulty,
+        prep_time,
+        cook_time,
         created_at,
         updated_at,
         author_id,
@@ -435,6 +447,9 @@ export async function fetchRecipeById(recipeId: number, userId?: string) {
 
     const recipeWithDetails: RecipeWithDetails & { isLiked: boolean } = {
       ...recipe,
+      difficulty: recipe.difficulty || null,
+      prep_time: recipe.prep_time || null,
+      cook_time: recipe.cook_time || null,
       author: Array.isArray(recipe.author) ? recipe.author[0] : recipe.author,
       ingredients: ingredients || [],
       steps: steps || [],

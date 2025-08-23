@@ -5,11 +5,13 @@ import { useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChefHat, Heart, Users, Loader2 } from "lucide-react";
+import { ChefHat, Heart, Users } from "lucide-react";
 import { RecipeCard } from "@/components/recipe-card-unified";
 import { RecipeDetailModal } from "@/components/recipe-detail-modal-unified";
 import { FollowButton } from "@/components/follow-button";
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { EmptyState } from "@/components/ui/empty-state";
 import { fetchUserRecipes } from "@/app/recipes/_actions/fetch-recipes";
 import { fetchUserLikedRecipes } from "@/app/recipes/_actions/fetch-recipes";
 import { fetchUserProfile } from "@/app/recipes/_actions/fetch-recipes";
@@ -71,12 +73,15 @@ export default function UserProfilePage() {
       try {
         setLoading(true);
 
-        // Load user profile
+        // Load user profile first to get the user ID
         const profileResult = await fetchUserProfile(username);
         if (profileResult.ok && profileResult.profile) {
           const profileData = profileResult.profile as any;
+          const userId = profileData.id;
+          
+          // Set profile immediately
           setProfile({
-            id: profileData.id,
+            id: userId,
             username: profileData.username,
             display_name: profileData.display_name,
             avatar_key: profileData.avatar_key,
@@ -88,20 +93,24 @@ export default function UserProfilePage() {
           setFollowerCount(profileData.follower_count || 0);
           setFollowingCount(profileData.following_count || 0);
 
-          // Load user's recipes
-          const recipesResult = await fetchUserRecipes(profileResult.profile.id);
+          // Load recipes and liked recipes in parallel
+          const [recipesResult, likedResult] = await Promise.all([
+            fetchUserRecipes(userId),
+            fetchUserLikedRecipes(userId)
+          ]);
+
           if (recipesResult.ok) {
             setRecipes(recipesResult.recipes as Recipe[]);
           }
 
-          // Load user's liked recipes
-          const likedResult = await fetchUserLikedRecipes(profileResult.profile.id);
           if (likedResult.ok) {
             setLikedRecipes(likedResult.recipes as Recipe[]);
           }
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error loading user data:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -123,10 +132,7 @@ export default function UserProfilePage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Loading profile...</p>
-        </div>
+        <LoadingSpinner message="Loading profile..." />
       </div>
     );
   }

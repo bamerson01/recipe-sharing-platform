@@ -260,7 +260,8 @@ export async function getWhoCommentedOnMyRecipes(page: number = 1, limit: number
         
         if (profile && recipe) {
           transformedComments.push({
-            id: profile.id,
+            id: comment.id,
+            user_id: profile.id,
             username: profile.username,
             display_name: profile.display_name,
             avatar_key: profile.avatar_key,

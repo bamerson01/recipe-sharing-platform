@@ -18,8 +18,20 @@ export const CreateRecipeSchema = z.object({
   prep_time: z.number().min(0).optional(),
   cook_time: z.number().min(0).optional(),
   is_public: z.boolean().default(false),
-  ingredients: z.array(z.string().min(1)).min(1, 'At least one ingredient required'),
-  steps: z.array(z.string().min(1)).min(1, 'At least one step required'),
+  ingredients: z.array(z.union([
+    z.string().min(1),
+    z.object({
+      text: z.string().min(1),
+      position: z.number()
+    })
+  ])).min(1, 'At least one ingredient required'),
+  steps: z.array(z.union([
+    z.string().min(1),
+    z.object({
+      text: z.string().min(1),
+      position: z.number()
+    })
+  ])).min(1, 'At least one step required'),
   category_ids: z.array(z.number()).optional(),
   cover_image_key: z.string().optional(),
 });

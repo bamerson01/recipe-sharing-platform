@@ -4,48 +4,60 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    /* Light mode - Warm, culinary-inspired palette */
+    --background: 36 39% 97%; /* Warm cream/parchment */
+    --foreground: 24 20% 15%; /* Dark brown text */
+    --card: 40 37% 98%; /* Off-white card */
+    --card-foreground: 24 20% 15%;
+    --popover: 40 37% 98%;
+    --popover-foreground: 24 20% 15%;
+    --primary: 21 89% 56%; /* Warm terracotta/burnt orange */
+    --primary-foreground: 40 37% 98%;
+    --secondary: 142 32% 54%; /* Fresh herb green */
+    --secondary-foreground: 40 37% 98%;
+    --muted: 36 21% 92%; /* Light beige */
+    --muted-foreground: 24 12% 39%;
+    --accent: 38 92% 65%; /* Golden/honey accent */
+    --accent-foreground: 24 20% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 40 37% 98%;
+    --border: 36 21% 88%;
+    --input: 36 21% 88%;
+    --ring: 21 89% 56%;
+    --radius: 0.75rem;
+    
+    /* Recipe-specific colors */
+    --recipe-easy: 142 71% 45%; /* Green */
+    --recipe-medium: 38 92% 50%; /* Amber */
+    --recipe-hard: 0 72% 51%; /* Red */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    /* Dark mode - Rich, sophisticated palette */
+    --background: 24 20% 10%; /* Dark chocolate */
+    --foreground: 40 37% 93%; /* Light cream text */
+    --card: 24 15% 13%;
+    --card-foreground: 40 37% 93%;
+    --popover: 24 15% 13%;
+    --popover-foreground: 40 37% 93%;
+    --primary: 21 89% 56%; /* Warm terracotta/burnt orange */
+    --primary-foreground: 24 20% 10%;
+    --secondary: 142 32% 45%; /* Muted herb green */
+    --secondary-foreground: 40 37% 93%;
+    --muted: 24 12% 20%;
+    --muted-foreground: 36 21% 65%;
+    --accent: 38 92% 60%; /* Golden accent */
+    --accent-foreground: 24 20% 10%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 40 37% 93%;
+    --border: 24 12% 20%;
+    --input: 24 12% 20%;
+    --ring: 21 89% 56%;
+    
+    /* Recipe-specific colors dark mode */
+    --recipe-easy: 142 60% 40%;
+    --recipe-medium: 38 85% 45%;
+    --recipe-hard: 0 65% 45%;
   }
 }
 

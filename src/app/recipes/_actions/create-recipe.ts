@@ -67,19 +67,22 @@ export async function createRecipe(formData: FormData) {
       .single();
 
     if (!profile) {
+      console.log('Profile not found, creating new profile for user:', user.id);
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: user.id,
           username: null,
           display_name: user.user_metadata?.full_name || null,
-          avatar_url: user.user_metadata?.avatar_url || null,
+          avatar_key: null, // Changed from avatar_url to avatar_key
+          bio: null,
         });
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
         return { ok: false, message: 'Failed to create profile' } as const;
       }
+      console.log('Profile created successfully for user:', user.id);
     }
 
     // Generate unique slug
@@ -165,7 +168,7 @@ export async function createRecipe(formData: FormData) {
 
     // Insert ingredients
     if (parsed.data.ingredients.length > 0) {
-      const ingredientsData = parsed.data.ingredients.map((ing, index) => ({
+      const ingredientsData = parsed.data.ingredients.map((ing: any, index) => ({
         recipe_id: recipe.id,
         position: index,
         text: typeof ing === 'string' ? ing.trim() : ing.text.trim(),
@@ -183,7 +186,7 @@ export async function createRecipe(formData: FormData) {
 
     // Insert steps
     if (parsed.data.steps.length > 0) {
-      const stepsData = parsed.data.steps.map((step, index) => ({
+      const stepsData = parsed.data.steps.map((step: any, index) => ({
         recipe_id: recipe.id,
         position: index,
         text: typeof step === 'string' ? step.trim() : step.text.trim(),

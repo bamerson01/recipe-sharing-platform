@@ -24,6 +24,13 @@ export async function GET(request: NextRequest) {
     const sort = validSorts.includes(sortBy) ? sortBy : 'relevance';
 
     const supabase = await getServerSupabase();
+    
+    // Validate pagination parameters
+    if (page < 1 || limit < 1 || limit > 100) {
+      return NextResponse.json({ 
+        error: 'Invalid pagination parameters' 
+      }, { status: 400 });
+    }
 
     // Build the base query - simplified for now
     let queryBuilder = supabase
@@ -72,7 +79,9 @@ export async function GET(request: NextRequest) {
 
     // Add search filter if query exists
     if (query && query.trim()) {
-      queryBuilder = queryBuilder.or(`title.ilike.%${query}%,summary.ilike.%${query}%`);
+      // Sanitize the query to prevent SQL injection
+      const sanitizedQuery = query.trim().replace(/[%_]/g, '\\$&');
+      queryBuilder = queryBuilder.or(`title.ilike.%${sanitizedQuery}%,summary.ilike.%${sanitizedQuery}%`);
     }
 
     // Add sorting
@@ -91,74 +100,131 @@ export async function GET(request: NextRequest) {
     const { data: recipes, error } = await queryBuilder;
 
     if (error) {
-      console.error('Search error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Search error:', error);
+      }
       return NextResponse.json({ error: 'Search failed' }, { status: 500 });
     }
 
+    if (!recipes || recipes.length === 0) {
+      return NextResponse.json({
+        recipes: [],
+        pagination: {
+          page,
+          limit,
+          hasMore: false
+        }
+      });
+    }
+
+    // Batch fetch all related data to avoid N+1 queries
+    const recipeIds = recipes.map(r => r.id);
+    const authorIds = [...new Set(recipes.map(r => r.author_id))];
+    
+    // Batch fetch all authors
+    const { data: authors } = await supabase
+      .from('profiles')
+      .select('id, display_name, username, avatar_key')
+      .in('id', authorIds);
+    
+    // Batch fetch all categories
+    const { data: allCategories } = await supabase
+      .from('recipe_categories')
+      .select(`
+        recipe_id,
+        category_id,
+        categories!inner(
+          id,
+          name,
+          slug
+        )
+      `)
+      .in('recipe_id', recipeIds);
+    
+    // Batch fetch all ingredients
+    const { data: allIngredients } = await supabase
+      .from('recipe_ingredients')
+      .select('recipe_id, id, position, text')
+      .in('recipe_id', recipeIds)
+      .order('position', { ascending: true });
+    
+    // Batch fetch all steps
+    const { data: allSteps } = await supabase
+      .from('recipe_steps')
+      .select('recipe_id, id, position, text')
+      .in('recipe_id', recipeIds)
+      .order('position', { ascending: true });
+    
+    // Create lookup maps for efficient data association
+    const authorsMap = new Map((authors || []).map(a => [a.id, a]));
+    const categoriesMap = new Map<number, any[]>();
+    const ingredientsMap = new Map<number, any[]>();
+    const stepsMap = new Map<number, any[]>();
+    
+    // Group categories by recipe
+    (allCategories || []).forEach((item: any) => {
+      if (!categoriesMap.has(item.recipe_id)) {
+        categoriesMap.set(item.recipe_id, []);
+      }
+      categoriesMap.get(item.recipe_id)?.push(item.categories);
+    });
+    
+    // Group ingredients by recipe
+    (allIngredients || []).forEach((item: any) => {
+      if (!ingredientsMap.has(item.recipe_id)) {
+        ingredientsMap.set(item.recipe_id, []);
+      }
+      ingredientsMap.get(item.recipe_id)?.push({
+        id: item.id,
+        position: item.position,
+        text: item.text
+      });
+    });
+    
+    // Group steps by recipe
+    (allSteps || []).forEach((item: any) => {
+      if (!stepsMap.has(item.recipe_id)) {
+        stepsMap.set(item.recipe_id, []);
+      }
+      stepsMap.get(item.recipe_id)?.push({
+        id: item.id,
+        position: item.position,
+        text: item.text
+      });
+    });
+    
     // Transform the data to match our expected format
-    const transformedRecipes = await Promise.all(
-      (recipes || []).map(async (recipe) => {
-        // Fetch author profile
-        const { data: author } = await supabase
-          .from('profiles')
-          .select('id, display_name, username, avatar_key')
-          .eq('id', recipe.author_id)
-          .single();
+    const transformedRecipes = recipes.map((recipe) => {
+      const author = authorsMap.get(recipe.author_id);
+      const categories = categoriesMap.get(recipe.id) || [];
+      const ingredients = ingredientsMap.get(recipe.id) || [];
+      const steps = stepsMap.get(recipe.id) || [];
 
-        // Fetch categories for this recipe
-        const { data: categories } = await supabase
-          .from('recipe_categories')
-          .select(`
-            category_id,
-            categories!inner(
-              id,
-              name,
-              slug
-            )
-          `)
-          .eq('recipe_id', recipe.id) as { data: Array<{ categories: { id: number; name: string; slug: string } }> | null };
-
-        // Fetch ingredients for this recipe
-        const { data: ingredients } = await supabase
-          .from('recipe_ingredients')
-          .select('id, position, text')
-          .eq('recipe_id', recipe.id)
-          .order('position', { ascending: true });
-
-        // Fetch steps for this recipe
-        const { data: steps } = await supabase
-          .from('recipe_steps')
-          .select('id, position, text')
-          .eq('recipe_id', recipe.id)
-          .order('position', { ascending: true });
-
-        return {
-          id: recipe.id,
-          title: recipe.title,
-          slug: recipe.slug,
-          summary: recipe.summary,
-          cover_image_key: recipe.cover_image_key,
-          is_public: recipe.is_public,
-          like_count: recipe.like_count,
-          difficulty: recipe.difficulty,
-          prep_time: recipe.prep_time,
-          cook_time: recipe.cook_time,
-          created_at: recipe.created_at,
-          updated_at: recipe.updated_at,
-          author: {
-            id: author?.id || recipe.author_id,
-            display_name: author?.display_name || 'Unknown',
-            username: author?.username || 'unknown',
-            avatar_key: author?.avatar_key || null,
-          },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          categories: categories?.map((c: any) => c.categories) || [],
-          ingredients: ingredients || [],
-          steps: steps || [],
-          search_rank: 0 // Placeholder for now
-        };
-      })
-    );
+      return {
+        id: recipe.id,
+        title: recipe.title,
+        slug: recipe.slug,
+        summary: recipe.summary,
+        cover_image_key: recipe.cover_image_key,
+        is_public: recipe.is_public,
+        like_count: recipe.like_count,
+        difficulty: recipe.difficulty,
+        prep_time: recipe.prep_time,
+        cook_time: recipe.cook_time,
+        created_at: recipe.created_at,
+        updated_at: recipe.updated_at,
+        author: {
+          id: author?.id || recipe.author_id,
+          display_name: author?.display_name || 'Unknown',
+          username: author?.username || 'unknown',
+          avatar_key: author?.avatar_key || null,
+        },
+        categories: categories,
+        ingredients: ingredients,
+        steps: steps,
+        search_rank: 0 // Placeholder for now
+      };
+    });
 
     return NextResponse.json({
       recipes: transformedRecipes,
@@ -170,7 +236,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Unexpected search error:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Unexpected search error:', error);
+    }
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

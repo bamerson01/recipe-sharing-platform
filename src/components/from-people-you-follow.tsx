@@ -108,7 +108,7 @@ export function FromPeopleYouFollow() {
           <div className="flex items-center justify-between">
             <CardTitle>From People You Follow</CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/discover">
+              <Link href="/creators">
                 Discover Creators <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -122,7 +122,7 @@ export function FromPeopleYouFollow() {
               Start following creators to see their latest recipes here
             </p>
             <Button asChild>
-              <Link href="/discover">
+              <Link href="/creators">
                 <ChefHat className="mr-2 h-4 w-4" />
                 Discover Creators
               </Link>
@@ -139,8 +139,8 @@ export function FromPeopleYouFollow() {
         <div className="flex items-center justify-between">
           <CardTitle>From People You Follow</CardTitle>
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/discover">
-              Discover More <ArrowRight className="ml-2 h-4 w-4" />
+            <Link href="/recipes">
+              Browse Recipes <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>

@@ -223,6 +223,9 @@ class ErrorMonitor {
     return Sentry.startSpan({
       name,
       op: operation,
+    }, () => {
+      // Span callback - return void for now
+      return undefined;
     });
   }
 

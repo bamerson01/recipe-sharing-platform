@@ -109,12 +109,15 @@ export class RecipeService {
     }
 
     if (params.categoryIds && params.categoryIds.length > 0) {
-      query = query.in('id', 
-        supabase
-          .from('recipe_categories')
-          .select('recipe_id')
-          .in('category_id', params.categoryIds)
-      );
+      // First get recipe IDs that have the selected categories
+      const { data: recipeIds } = await supabase
+        .from('recipe_categories')
+        .select('recipe_id')
+        .in('category_id', params.categoryIds);
+      
+      if (recipeIds && recipeIds.length > 0) {
+        query = query.in('id', recipeIds.map(r => r.recipe_id));
+      }
     }
 
     // Apply sorting
@@ -146,7 +149,7 @@ export class RecipeService {
     }
 
     // Transform categories data
-    const recipes = (data || []).map(recipe => ({
+    const recipes = (data || []).map((recipe: any) => ({
       ...recipe,
       categories: recipe.categories?.map((rc: any) => rc.category).filter(Boolean) || []
     }));
@@ -204,8 +207,8 @@ export class RecipeService {
 
     // Transform categories
     const recipe = {
-      ...data,
-      categories: data.categories?.map((rc: any) => rc.category).filter(Boolean) || []
+      ...(data as any),
+      categories: (data as any).categories?.map((rc: any) => rc.category).filter(Boolean) || []
     };
 
     // Fetch user's like and save status if userId provided
@@ -283,10 +286,10 @@ export class RecipeService {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    return (recipes || []).map(recipe => ({
+    return (recipes || []).map((recipe: any) => ({
       ...recipe,
       categories: recipe.categories?.map((rc: any) => rc.category).filter(Boolean) || []
-    })) as RecipeSummary[];
+    })) as unknown as RecipeSummary[];
   }
 
   /**
@@ -350,9 +353,9 @@ export class RecipeService {
 
     const { data: recipes } = await searchQuery.limit(50);
 
-    return (recipes || []).map(recipe => ({
+    return (recipes || []).map((recipe: any) => ({
       ...recipe,
       categories: recipe.categories?.map((rc: any) => rc.category).filter(Boolean) || []
-    })) as RecipeSummary[];
+    })) as unknown as RecipeSummary[];
   }
 }

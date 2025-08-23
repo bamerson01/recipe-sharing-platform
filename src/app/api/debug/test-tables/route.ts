@@ -17,7 +17,13 @@ export async function GET() {
     }
     
     // Check if tables exist and have data
-    const results = {
+    const results: {
+      follows: any;
+      likes: any;
+      recipe_comments: any;
+      profiles: any;
+      recipes: any;
+    } = {
       follows: null,
       likes: null,
       recipe_comments: null,

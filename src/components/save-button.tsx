@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
-import { Bookmark } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { toggleSave } from "@/app/recipes/_actions/manage-saves";
 
@@ -15,7 +15,7 @@ interface SaveButtonProps {
   onSaveChange?: (saved: boolean) => void;
 }
 
-export function SaveButton({
+export const SaveButton = memo(function SaveButton({
   recipeId,
   initialSaved = false,
   size = "sm",
@@ -92,11 +92,11 @@ export function SaveButton({
         : ''
         } ${className}`}
     >
-      <Bookmark
+      <BookOpen
         className={`h-4 w-4 mr-2 transition-all duration-200 ${saved ? 'fill-current' : ''
           }`}
       />
-      {saved ? 'Saved' : 'Save'}
+      {saved ? 'In Cookbook' : 'Add to Cookbook'}
     </Button>
   );
-}
+});

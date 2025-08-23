@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { ChefHat } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
 interface LikeButtonProps {
@@ -15,7 +15,7 @@ interface LikeButtonProps {
   onLikeChange?: (liked: boolean, newCount: number) => void;
 }
 
-export function LikeButton({
+export const LikeButton = memo(function LikeButton({
   recipeId,
   initialLikeCount,
   initialLiked = false,
@@ -93,15 +93,15 @@ export function LikeButton({
       onClick={handleLikeToggle}
       disabled={isLoading}
       className={`transition-all duration-200 ${liked
-          ? 'text-red-500 hover:text-red-600 border-red-500 hover:border-red-600'
+          ? 'text-primary hover:text-primary/90 border-primary hover:border-primary/90'
           : ''
         } ${className}`}
     >
-      <Heart
+      <ChefHat
         className={`h-4 w-4 mr-2 transition-all duration-200 ${liked ? 'fill-current' : ''
           }`}
       />
       {likeCount}
     </Button>
   );
-}
+});

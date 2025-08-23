@@ -22,7 +22,7 @@ export function SavedRecipesGrid({ initialRecipes }: SavedRecipesGridProps) {
           Start exploring recipes and save the ones you&apos;d like to try later
         </p>
         <Button asChild>
-          <a href="/discover">Discover Recipes</a>
+          <a href="/recipes">Browse Recipes</a>
         </Button>
       </div>
     );

@@ -23,22 +23,16 @@ export async function MainNav() {
               <Link href="/dashboard" className="transition-colors hover:text-foreground/80">
                 Dashboard
               </Link>
-              <Link href="/discover" className="transition-colors hover:text-foreground/80">
-                Discover
+              <Link href="/recipes" className="transition-colors hover:text-foreground/80">
+                Recipes
               </Link>
-              <Link href="/my-recipes" className="transition-colors hover:text-foreground/80">
-                My Recipes
-              </Link>
-              <Link href="/recipes/new" className="transition-colors hover:text-foreground/80">
-                New Recipe
-              </Link>
-              <Link href="/saved-recipes" className="transition-colors hover:text-foreground/80">
-                Saved
+              <Link href="/my-cookbook" className="transition-colors hover:text-foreground/80">
+                My Cookbook
               </Link>
             </>
           ) : (
             <Link href="/discover" className="transition-colors hover:text-foreground/80">
-              Discover
+              Recipes
             </Link>
           )}
         </nav>

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,7 +26,10 @@ import {
   EyeOff, 
   Heart, 
   Bookmark, 
-  MessageCircle 
+  MessageCircle,
+  ChefHat,
+  Users,
+  Flame
 } from "lucide-react";
 import {
   Tooltip,
@@ -36,17 +39,23 @@ import {
 } from "@/components/ui/tooltip";
 import { imageSrcFromKey } from "@/lib/images/url";
 import { getRecipeUrl, getProfileUrl } from "@/lib/urls";
+import { getBlurPlaceholder, getImageSizes } from "@/lib/images/blur-placeholder";
 import type { RecipeCardProps } from "@/types/recipe";
 
-export function RecipeCard({
+interface RecipeCardWithIndexProps extends RecipeCardProps {
+  index?: number;
+}
+
+export const RecipeCard = memo(function RecipeCard({
   recipe,
   variant = 'default',
   onOpenModal,
   onEdit,
   onDelete,
   onToggleVisibility,
-  onSaveChange
-}: RecipeCardProps) {
+  onSaveChange,
+  index = 0
+}: RecipeCardWithIndexProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -78,14 +87,17 @@ export function RecipeCard({
     >
       {/* Image Header */}
       <CardHeader className="p-0">
-        <div className="relative aspect-[4/3] bg-muted">
+        <div className="relative aspect-[4/3] bg-gradient-to-b from-muted/50 to-muted">
           {recipe.cover_image_key ? (
             <Image
               src={imageSrcFromKey(recipe.cover_image_key, recipe.updated_at) || ''}
               alt={recipe.title}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes={getImageSizes('card')}
+              placeholder="blur"
+              blurDataURL={getBlurPlaceholder('recipe')}
+              priority={index < 3}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -101,7 +113,7 @@ export function RecipeCard({
                   <Button
                     variant="secondary"
                     size="icon"
-                    className="h-8 w-8 bg-background/80 backdrop-blur"
+                    className="h-8 w-8 bg-background/90 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <MoreVertical className="h-4 w-4" />
@@ -153,9 +165,19 @@ export function RecipeCard({
           {/* Visibility badge for owner */}
           {isOwner && !recipe.is_public && (
             <div className="absolute top-2 left-2">
-              <Badge variant="secondary" className="bg-background/80 backdrop-blur">
+              <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm shadow-sm">
                 <EyeOff className="mr-1 h-3 w-3" />
                 Private
+              </Badge>
+            </div>
+          )}
+          
+          {/* Quick recipe badge for <30 min recipes */}
+          {recipe.prep_time && recipe.cook_time && (recipe.prep_time + recipe.cook_time) < 30 && (
+            <div className="absolute bottom-2 left-2">
+              <Badge className="bg-accent/90 text-accent-foreground backdrop-blur-sm shadow-sm">
+                <Flame className="mr-1 h-3 w-3" />
+                Quick Recipe
               </Badge>
             </div>
           )}
@@ -164,7 +186,7 @@ export function RecipeCard({
 
       <CardContent className="p-4">
         {/* Title */}
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2 hover:text-primary transition-colors">
+        <h3 className="font-serif font-semibold text-xl mb-2 line-clamp-2 hover:text-primary transition-colors">
           {recipe.title}
         </h3>
 
@@ -175,27 +197,32 @@ export function RecipeCard({
           </p>
         )}
 
-        {/* Author - clickable, navigates to profile */}
-        <div className="flex items-center text-sm text-muted-foreground mb-3">
-          <Avatar className="h-5 w-5 mr-2">
-            <AvatarImage
-              src={recipe.author.avatar_key
-                ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}`
-                : undefined
-              }
-            />
-            <AvatarFallback className="text-xs">
-              {recipe.author.display_name?.[0]?.toUpperCase() ||
-                recipe.author.username?.[0]?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <Link
-            href={getProfileUrl(recipe.author.username)}
-            className="hover:text-primary transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {recipe.author.display_name || recipe.author.username || 'Anonymous'}
-          </Link>
+        {/* Author and Date */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+          <div className="flex items-center">
+            <Avatar className="h-5 w-5 mr-2">
+              <AvatarImage
+                src={recipe.author.avatar_key
+                  ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${recipe.author.avatar_key}`
+                  : undefined
+                }
+              />
+              <AvatarFallback className="text-xs">
+                {recipe.author.display_name?.[0]?.toUpperCase() ||
+                  recipe.author.username?.[0]?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <Link
+              href={getProfileUrl(recipe.author.username)}
+              className="hover:text-primary transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {recipe.author.display_name || recipe.author.username || 'Anonymous'}
+            </Link>
+          </div>
+          <span className="text-xs">
+            {new Date(recipe.created_at).toLocaleDateString()}
+          </span>
         </div>
 
         {/* Categories */}
@@ -215,30 +242,31 @@ export function RecipeCard({
         )}
 
         {/* Time and Difficulty */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 text-xs">
           {recipe.difficulty && (
-            <div className="flex items-center gap-1">
-              <span className={`font-medium ${recipe.difficulty === 'easy' ? 'text-green-600' :
-                  recipe.difficulty === 'medium' ? 'text-yellow-600' :
-                    'text-red-600'
-                }`}>
-                {recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1)}
-              </span>
-            </div>
+            <Badge 
+              variant="outline" 
+              className={`border-2 font-medium ${
+                recipe.difficulty === 'easy' ? 'border-recipe-easy text-recipe-easy' :
+                  recipe.difficulty === 'medium' ? 'border-recipe-medium text-recipe-medium' :
+                    'border-recipe-hard text-recipe-hard'
+                }`}
+            >
+              <ChefHat className="h-3 w-3 mr-1" />
+              {recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1)}
+            </Badge>
           )}
           {(recipe.prep_time || recipe.cook_time) && (
-            <>
-              {recipe.prep_time && (
-                <div className="flex items-center gap-1">
-                  <span>Prep: {recipe.prep_time}m</span>
-                </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {recipe.prep_time && recipe.cook_time ? (
+                <span className="font-medium">{recipe.prep_time + recipe.cook_time} min</span>
+              ) : (
+                <span className="font-medium">
+                  {recipe.prep_time ? `${recipe.prep_time} min` : `${recipe.cook_time} min`}
+                </span>
               )}
-              {recipe.cook_time && (
-                <div className="flex items-center gap-1">
-                  <span>Cook: {recipe.cook_time}m</span>
-                </div>
-              )}
-            </>
+            </div>
           )}
         </div>
       </CardContent>
@@ -252,32 +280,38 @@ export function RecipeCard({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 text-muted-foreground cursor-default">
-                      <Heart className="h-4 w-4" />
-                      <span className="font-medium">{recipe.like_count || 0}</span>
+                    <div className="flex items-center gap-1.5 text-muted-foreground cursor-default">
+                      <div className="p-1.5 rounded-full bg-primary/10">
+                        <Heart className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <span className="font-semibold">{recipe.like_count || 0}</span>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>Likes</TooltipContent>
+                  <TooltipContent>Favorites</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 text-muted-foreground cursor-default">
-                      <Bookmark className="h-4 w-4" />
-                      <span className="font-medium">{recipe.save_count || 0}</span>
+                    <div className="flex items-center gap-1.5 text-muted-foreground cursor-default">
+                      <div className="p-1.5 rounded-full bg-secondary/10">
+                        <Bookmark className="h-3.5 w-3.5 text-secondary" />
+                      </div>
+                      <span className="font-semibold">{recipe.save_count || 0}</span>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>Saves</TooltipContent>
+                  <TooltipContent>Saved to Cookbooks</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 text-muted-foreground cursor-default">
-                      <MessageCircle className="h-4 w-4" />
-                      <span className="font-medium">{recipe.comment_count || 0}</span>
+                    <div className="flex items-center gap-1.5 text-muted-foreground cursor-default">
+                      <div className="p-1.5 rounded-full bg-accent/10">
+                        <MessageCircle className="h-3.5 w-3.5 text-accent" />
+                      </div>
+                      <span className="font-semibold">{recipe.comment_count || 0}</span>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>Comments</TooltipContent>
+                  <TooltipContent>Reviews</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
@@ -344,47 +378,39 @@ export function RecipeCard({
           </div>
         ) : (
           // Default variant: Show interaction buttons
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <SaveButton
-                recipeId={recipe.id}
-                initialSaved={recipe.is_saved || false}
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
-                onSaveChange={(saved) => onSaveChange?.(recipe.id, saved)}
-              />
-              <LikeButton
-                recipeId={recipe.id}
-                initialLikeCount={recipe.like_count}
-                initialLiked={recipe.is_liked}
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
-              />
-              <ShareButton
-                recipe={{
-                  id: recipe.id,
-                  title: recipe.title,
-                  summary: recipe.summary,
-                  cover_image_key: recipe.cover_image_key,
-                  author: recipe.author,
-                  categories: recipe.categories
-                }}
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
-              />
-            </div>
-
-            {/* Timestamp */}
-            <div className="flex items-center text-xs text-muted-foreground">
-              <Clock className="h-3 w-3 mr-1" />
-              <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <SaveButton
+              recipeId={recipe.id}
+              initialSaved={recipe.is_saved || false}
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
+              onSaveChange={(saved) => onSaveChange?.(recipe.id, saved)}
+            />
+            <LikeButton
+              recipeId={recipe.id}
+              initialLikeCount={recipe.like_count}
+              initialLiked={recipe.is_liked}
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
+            />
+            <ShareButton
+              recipe={{
+                id: recipe.id,
+                title: recipe.title,
+                summary: recipe.summary,
+                cover_image_key: recipe.cover_image_key,
+                author: recipe.author,
+                categories: recipe.categories
+              }}
+              size="sm"
+              variant="outline"
+              className="text-muted-foreground hover:text-foreground"
+            />
           </div>
         )}
       </CardFooter>
     </Card>
   );
-}
+});

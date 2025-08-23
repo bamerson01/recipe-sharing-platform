@@ -13,7 +13,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const results = {
+    const results: {
+      user: { id: string, email?: string };
+      actions: {
+        getFollowers: any;
+        getFollowing: any;
+        getWhoLikedMyRecipes: any;
+        getWhoCommentedOnMyRecipes: any;
+      }
+    } = {
       user: { id: user.id, email: user.email },
       actions: {
         getFollowers: null,

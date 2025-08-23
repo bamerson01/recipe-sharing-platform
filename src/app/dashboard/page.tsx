@@ -100,8 +100,8 @@ async function PopularRecipes() {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Trending Recipes</h3>
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/discover">
-            Discover More <ArrowRight className="ml-2 h-4 w-4" />
+          <Link href="/recipes">
+            Browse Recipes <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </div>
@@ -160,8 +160,8 @@ export default async function DashboardPage() {
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/discover">
-              <TrendingUp className="mr-2 h-4 w-4" /> Discover
+            <Link href="/recipes">
+              <TrendingUp className="mr-2 h-4 w-4" /> Browse Recipes
             </Link>
           </Button>
           <Button variant="outline" asChild>

@@ -5,7 +5,16 @@ export async function GET() {
   try {
     const supabase = await getServerSupabase();
     
-    const results = {
+    const results: {
+      follows_schema: any;
+      likes_schema: any;
+      recipe_comments_schema: any;
+      sample_data: {
+        follows: any;
+        likes: any;
+        recipe_comments: any;
+      }
+    } = {
       follows_schema: null,
       likes_schema: null,
       recipe_comments_schema: null,

@@ -106,6 +106,7 @@ export default function EditProfilePage() {
           const emailPrefix = user.email?.split('@')[0] || '';
           setValue('display_name', data.profile.display_name || emailPrefix);
           setValue('username', data.profile.username || emailPrefix);
+          setValue('bio', data.profile.bio || '');
         } else {
           setError('Failed to load profile');
         }
@@ -159,6 +160,10 @@ export default function EditProfilePage() {
         setAvatarFile(null);
         setAvatarPreview(null);
         setSuccess('Avatar updated successfully!');
+        // Refresh the page to update all components that use the avatar
+        setTimeout(() => {
+          router.refresh();
+        }, 500);
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to update avatar');

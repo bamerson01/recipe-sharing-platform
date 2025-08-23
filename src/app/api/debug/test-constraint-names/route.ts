@@ -6,8 +6,8 @@ export async function GET() {
     const supabase = await getServerSupabase();
     
     const results = {
-      follows_tests: [],
-      likes_tests: []
+      follows_tests: [] as any[],
+      likes_tests: [] as any[]
     };
 
     // Test different constraint name variations for follows table

@@ -41,7 +41,7 @@ export async function followUser(targetUserId: string) {
       .from('follows')
       .select('id')
       .eq('follower_id', user.id)
-      .eq('followed_id', targetUserId)
+      .eq('following_id', targetUserId)
       .single();
 
     if (existingFollow) {
@@ -53,7 +53,7 @@ export async function followUser(targetUserId: string) {
       .from('follows')
       .insert({
         follower_id: user.id,
-        followed_id: targetUserId,
+        following_id: targetUserId,
       });
 
     if (followError) {
@@ -96,7 +96,7 @@ export async function unfollowUser(targetUserId: string) {
       .from('follows')
       .delete()
       .eq('follower_id', user.id)
-      .eq('followed_id', targetUserId);
+      .eq('following_id', targetUserId);
 
     if (unfollowError) {
       console.error('Error unfollowing user:', unfollowError);
@@ -138,7 +138,7 @@ export async function getFollowers(userId: string, page: number = 1, limit: numb
         created_at,
         follower_id
       `, { count: 'exact' })
-      .eq('followed_id', validatedUserId)
+      .eq('following_id', validatedUserId)
       .order('created_at', { ascending: false })
       .range(offset, offset + validatedLimit - 1);
 
@@ -216,7 +216,7 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
       .select(`
         id,
         created_at,
-        followed_id
+        following_id
       `, { count: 'exact' })
       .eq('follower_id', validatedUserId)
       .order('created_at', { ascending: false })
@@ -230,7 +230,7 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
     // Transform data - fetch profile data separately
     const transformedFollowing = [];
     if (following && following.length > 0) {
-      const followedIds = following.map(f => f.followed_id);
+      const followedIds = following.map(f => f.following_id);
       
       // Fetch profile data for all followed users
       const { data: profiles, error: profilesError } = await supabase
@@ -248,7 +248,7 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
       
       // Transform the data
       for (const follow of following) {
-        const profile = profileMap.get(follow.followed_id);
+        const profile = profileMap.get(follow.following_id);
         if (profile) {
           transformedFollowing.push({
             id: profile.id,
@@ -292,7 +292,7 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
     // First get the list of users the current user follows
     const { data: followingUsers, error: followingError } = await supabase
       .from('follows')
-      .select('followed_id')
+      .select('following_id')
       .eq('follower_id', user.id);
 
     if (followingError) {
@@ -312,7 +312,7 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
     }
 
     // Extract the user IDs
-    const followedUserIds = followingUsers.map(f => f.followed_id);
+    const followedUserIds = followingUsers.map(f => f.following_id);
 
     // Get recipes from followed users
     const { data: recipes, error: recipesError, count } = await supabase

@@ -14,17 +14,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    console.log('User data:', {
-      id: user.id,
-      email: user.email,
-      user_metadata: user.user_metadata
-    });
 
     // Ensure profile exists (creates if missing)
     await ensureProfile();
 
     // Get user profile
-    console.log('Querying profile for user:', user.id);
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
@@ -32,28 +26,21 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (profileError) {
-      console.error('Profile error:', profileError);
       return NextResponse.json({
-        error: 'Profile not found',
-        details: profileError.message,
-        code: profileError.code
+        error: 'Profile not found'
       }, { status: 500 });
     }
 
-    console.log('Profile fetched:', {
-      id: profile.id,
-      avatar_key: profile.avatar_key,
-      display_name: profile.display_name
-    });
 
     return NextResponse.json({ profile });
 
   } catch (error) {
-    console.error('Error fetching profile:', error);
+    // Log error internally but don't expose details to client
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching profile:', error);
+    }
     return NextResponse.json({
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
+      error: 'Internal server error'
     }, { status: 500 });
   }
 }
@@ -109,10 +96,11 @@ export async function PUT(request: NextRequest) {
       .eq('id', user.id);
 
     if (updateError) {
-      console.error('Error updating profile:', updateError);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error updating profile:', updateError);
+      }
       return NextResponse.json({
-        error: 'Failed to update profile',
-        details: updateError.message
+        error: 'Failed to update profile'
       }, { status: 500 });
     }
 
@@ -122,10 +110,11 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error updating profile:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error updating profile:', error);
+    }
     return NextResponse.json({
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Internal server error'
     }, { status: 500 });
   }
 }

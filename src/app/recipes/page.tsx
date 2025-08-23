@@ -7,6 +7,7 @@ import { RecipeCard } from "@/components/recipe-card-unified";
 import { RecipeDetailModal } from "@/components/recipe-detail-modal-unified";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
@@ -19,7 +20,7 @@ import {
 } from "lucide-react";
 import type { RecipeSummary } from "@/types/recipe";
 
-function DiscoverContent() {
+function RecipesContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -161,7 +162,7 @@ function DiscoverContent() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Discover Recipes</h1>
+        <h1 className="text-4xl font-bold mb-2">Browse Recipes</h1>
         <p className="text-muted-foreground">
           Find your next favorite dish from our community
         </p>
@@ -266,12 +267,12 @@ function DiscoverContent() {
   );
 }
 
-export default function DiscoverPage() {
+export default function RecipesPage() {
   return (
     <Suspense fallback={
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Discover Recipes</h1>
+          <h1 className="text-4xl font-bold mb-2">Browse Recipes</h1>
           <p className="text-muted-foreground">
             Find your next favorite dish from our community
           </p>
@@ -281,7 +282,7 @@ export default function DiscoverPage() {
         </div>
       </div>
     }>
-      <DiscoverContent />
+      <RecipesContent />
     </Suspense>
   );
 }

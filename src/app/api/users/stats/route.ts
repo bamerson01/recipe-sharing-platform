@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const { count: followerCount } = await supabase
       .from('follows')
       .select('*', { count: 'exact', head: true })
-      .eq('followed_id', user.id);
+      .eq('following_id', user.id);
 
     // Get following count
     const { count: followingCount } = await supabase

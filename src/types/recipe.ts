@@ -35,6 +35,7 @@ export interface RecipeSummary {
   // Optional user-specific fields
   is_saved?: boolean;
   is_liked?: boolean;
+  isOwned?: boolean;
 }
 
 // Full shape - complete data for detail view/modal

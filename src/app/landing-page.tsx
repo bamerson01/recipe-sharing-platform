@@ -14,7 +14,7 @@ export default function LandingPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/recipes?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -63,7 +63,7 @@ export default function LandingPage() {
                 Get Started - It&apos;s Free
               </Button>
             </Link>
-            <Link href="/discover">
+            <Link href="/recipes">
               <Button variant="outline" size="lg" className="h-12 px-8">
                 Browse Recipes
               </Button>

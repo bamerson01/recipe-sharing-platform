@@ -121,9 +121,8 @@ async function extractDatabaseSchema() {
 
         schema.tables[tableName] = {
           columns: columns || [],
-          constraints: constraints || [],
           foreignKeys: foreignKeys || []
-        };
+        } as any;
       }
     }
 

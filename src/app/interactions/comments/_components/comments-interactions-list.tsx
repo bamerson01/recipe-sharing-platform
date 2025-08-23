@@ -12,6 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 
 interface CommentInteraction {
   id: string;
+  user_id: string;
   username: string;
   display_name: string | null;
   avatar_key: string | null;
@@ -123,7 +124,7 @@ export function CommentsInteractionsList() {
   return (
     <div className="space-y-4">
       {comments.map((comment) => (
-        <Card key={`${comment.id}-${comment.recipe_id}`}>
+        <Card key={comment.id}>
           <CardContent className="flex items-start space-x-4 p-4">
             <Link href={`/u/${comment.username}`} className="flex-shrink-0">
               <Avatar className="h-12 w-12 hover:opacity-80 transition-opacity">

@@ -85,14 +85,7 @@ export async function GET() {
       const author = Array.isArray(recipe.author) ? recipe.author[0] : recipe.author;
       
       // Handle categories
-      interface RecipeCategory {
-        category: {
-          id: number;
-          name: string;
-          slug: string;
-        }
-      }
-      const categories = recipe.categories?.map((rc: RecipeCategory) => ({
+      const categories = recipe.categories?.map((rc: any) => ({
         id: rc.category.id,
         name: rc.category.name,
         slug: rc.category.slug
