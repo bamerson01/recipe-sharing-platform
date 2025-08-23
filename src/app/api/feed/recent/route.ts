@@ -39,9 +39,7 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    if (error) {
-      console.error('Error fetching recent feed:', error);
-      return NextResponse.json(
+    if (error) {      return NextResponse.json(
         { error: 'Failed to fetch feed' },
         { status: 500 }
       );
@@ -70,9 +68,7 @@ export async function GET(request: Request) {
       recipes: formattedRecipes,
       count: formattedRecipes.length 
     });
-  } catch (error) {
-    console.error('Error in recent feed:', error);
-    return NextResponse.json(
+  } catch (error) {    return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );

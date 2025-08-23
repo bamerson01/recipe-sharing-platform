@@ -21,9 +21,7 @@ export async function GET() {
       .not('username', 'is', null) // Only show users who have set up their profile
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching creators:', error);
-      return NextResponse.json({ error: 'Failed to fetch creators' }, { status: 500 });
+    if (error) {      return NextResponse.json({ error: 'Failed to fetch creators' }, { status: 500 });
     }
 
     // For each profile, get their recipe count and follower count
@@ -72,8 +70,6 @@ export async function GET() {
       total: creatorsWithStats.length 
     });
 
-  } catch (error) {
-    console.error('Error in creators API:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

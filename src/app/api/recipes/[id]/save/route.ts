@@ -30,18 +30,14 @@ export async function GET(
       .eq('user_id', user.id)
       .single();
 
-    if (saveError && saveError.code !== 'PGRST116') {
-      console.error('Error checking save status:', saveError);
-      return NextResponse.json({ error: 'Error checking save status' }, { status: 500 });
+    if (saveError && saveError.code !== 'PGRST116') {      return NextResponse.json({ error: 'Error checking save status' }, { status: 500 });
     }
 
     return NextResponse.json({
       saved: !!save
     });
 
-  } catch (error) {
-    console.error('Unexpected error checking save status:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
@@ -97,9 +93,7 @@ export async function POST(
         .eq('recipe_id', recipeId)
         .eq('user_id', user.id);
 
-      if (deleteError) {
-        console.error('Error removing save:', deleteError);
-        return NextResponse.json({ error: 'Failed to remove save' }, { status: 500 });
+      if (deleteError) {        return NextResponse.json({ error: 'Failed to remove save' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -115,9 +109,7 @@ export async function POST(
           user_id: user.id,
         });
 
-      if (insertError) {
-        console.error('Error adding save:', insertError);
-        return NextResponse.json({ error: 'Failed to add save' }, { status: 500 });
+      if (insertError) {        return NextResponse.json({ error: 'Failed to add save' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -126,8 +118,6 @@ export async function POST(
       });
     }
 
-  } catch (error) {
-    console.error('Unexpected error in save toggle:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

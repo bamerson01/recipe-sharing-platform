@@ -341,9 +341,16 @@ Stores all user-uploaded content:
 
 All database migrations are stored in `/database/` directory:
 - `add_following_system.sql` - Initial follow system
-- `add_recipe_time_difficulty.sql` - Recipe metadata
+- `add_recipe_time_difficulty.sql` - Recipe metadata  
 - `fix_unique_username_trigger.sql` - Username constraints
 - `fix_likes_saves_system.sql` - Engagement features
+- `fix_foreign_keys.sql` - **NEW** - Corrected FK relationships
+
+**✅ August 2025 Migrations Applied**:
+- Fixed `following_id` column usage throughout codebase
+- Added missing indexes for performance optimization
+- Implemented proper CASCADE DELETE policies
+- Enhanced RLS policies for better security
 
 ## Best Practices
 

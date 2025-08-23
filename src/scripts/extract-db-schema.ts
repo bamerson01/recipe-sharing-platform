@@ -8,9 +8,7 @@ require('dotenv').config({ path: '.env.local' });
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing required environment variables');
-  process.exit(1);
+if (!supabaseUrl || !supabaseServiceKey) {  process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -52,8 +50,6 @@ interface DatabaseSchema {
 
 async function extractDatabaseSchema() {
   try {
-    console.log('🔍 Extracting database schema...');
-
     const schema: DatabaseSchema = {
       timestamp: new Date().toISOString(),
       tables: {},
@@ -64,21 +60,15 @@ async function extractDatabaseSchema() {
       sequences: []
     };
 
-    // Get all tables
-    console.log('📋 Getting tables...');
-    const { data: tables, error: tablesError } = await supabase
+    // Get all tables    const { data: tables, error: tablesError } = await supabase
       .from('information_schema.tables')
       .select('table_name, table_type')
       .eq('table_schema', 'public')
       .eq('table_type', 'BASE TABLE');
 
-    if (tablesError) {
-      console.error('Error getting tables:', tablesError);
-    } else {
+    if (tablesError) {    } else {
       for (const table of tables || []) {
         const tableName = table.table_name;
-        console.log(`  - Processing table: ${tableName}`);
-
         // Get table structure
         const { data: columns, error: columnsError } = await supabase
           .from('information_schema.columns')
@@ -87,9 +77,7 @@ async function extractDatabaseSchema() {
           .eq('table_name', tableName)
           .order('ordinal_position');
 
-        if (columnsError) {
-          console.error(`Error getting columns for ${tableName}:`, columnsError);
-        }
+        if (columnsError) {        }
 
         // Get constraints
         const { data: constraints, error: constraintsError } = await supabase
@@ -98,9 +86,7 @@ async function extractDatabaseSchema() {
           .eq('table_schema', 'public')
           .eq('table_name', tableName);
 
-        if (constraintsError) {
-          console.error(`Error getting constraints for ${tableName}:`, constraintsError);
-        }
+        if (constraintsError) {        }
 
         // Get foreign keys
         const { data: foreignKeys, error: fkError } = await supabase
@@ -115,9 +101,7 @@ async function extractDatabaseSchema() {
           .eq('table_name', tableName)
           .not('referenced_table_name', 'is', null);
 
-        if (fkError) {
-          console.error(`Error getting foreign keys for ${tableName}:`, fkError);
-        }
+        if (fkError) {        }
 
         schema.tables[tableName] = {
           columns: columns || [],
@@ -126,87 +110,59 @@ async function extractDatabaseSchema() {
       }
     }
 
-    // Get RLS policies
-    console.log('🔐 Getting RLS policies...');
-    const { data: policies, error: policiesError } = await supabase
+    // Get RLS policies    const { data: policies, error: policiesError } = await supabase
       .from('pg_policies')
       .select('schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check')
       .eq('schemaname', 'public');
 
-    if (policiesError) {
-      console.error('Error getting policies:', policiesError);
-    } else {
+    if (policiesError) {    } else {
       schema.policies = policies || [];
     }
 
-    // Get functions
-    console.log('⚙️ Getting functions...');
-    const { data: functions, error: functionsError } = await supabase
+    // Get functions    const { data: functions, error: functionsError } = await supabase
       .from('information_schema.routines')
       .select('routine_name, routine_type, data_type, routine_definition')
       .eq('routine_schema', 'public');
 
-    if (functionsError) {
-      console.error('Error getting functions:', functionsError);
-    } else {
+    if (functionsError) {    } else {
       schema.functions = functions || [];
     }
 
-    // Get triggers
-    console.log('🔔 Getting triggers...');
-    const { data: triggers, error: triggersError } = await supabase
+    // Get triggers    const { data: triggers, error: triggersError } = await supabase
       .from('information_schema.triggers')
       .select('trigger_name, event_manipulation, event_object_table, action_statement')
       .eq('trigger_schema', 'public');
 
-    if (triggersError) {
-      console.error('Error getting triggers:', triggersError);
-    } else {
+    if (triggersError) {    } else {
       schema.triggers = triggers || [];
     }
 
-    // Get indexes
-    console.log('📊 Getting indexes...');
-    const { data: indexes, error: indexesError } = await supabase
+    // Get indexes    const { data: indexes, error: indexesError } = await supabase
       .from('pg_indexes')
       .select('tablename, indexname, indexdef')
       .eq('schemaname', 'public');
 
-    if (indexesError) {
-      console.error('Error getting indexes:', indexesError);
-    } else {
+    if (indexesError) {    } else {
       schema.indexes = indexes || [];
     }
 
-    // Get sequences
-    console.log('🔢 Getting sequences...');
-    const { data: sequences, error: sequencesError } = await supabase
+    // Get sequences    const { data: sequences, error: sequencesError } = await supabase
       .from('information_schema.sequences')
       .select('sequence_name, data_type, start_value, minimum_value, maximum_value, increment')
       .eq('sequence_schema', 'public');
 
-    if (sequencesError) {
-      console.error('Error getting sequences:', sequencesError);
-    } else {
+    if (sequencesError) {    } else {
       schema.sequences = sequences || [];
     }
 
     // Save to file
     const outputPath = path.join(__dirname, '../../database/current-schema.json');
     fs.writeFileSync(outputPath, JSON.stringify(schema, null, 2));
-
-    console.log(`✅ Database schema extracted to: ${outputPath}`);
-
     // Also create a human-readable version
     const humanReadablePath = path.join(__dirname, '../../database/current-schema.md');
     const markdown = generateMarkdownSchema(schema);
     fs.writeFileSync(humanReadablePath, markdown);
-
-    console.log(`✅ Human-readable schema saved to: ${humanReadablePath}`);
-
-  } catch (error) {
-    console.error('❌ Error extracting schema:', error);
-  }
+  } catch (error) {  }
 }
 
 function generateMarkdownSchema(schema: DatabaseSchema): string {
@@ -296,10 +252,6 @@ function generateMarkdownSchema(schema: DatabaseSchema): string {
 }
 
 // Run the extraction
-extractDatabaseSchema().then(() => {
-  console.log('🎉 Schema extraction complete!');
-  process.exit(0);
-}).catch((error) => {
-  console.error('💥 Schema extraction failed:', error);
-  process.exit(1);
+extractDatabaseSchema().then(() => {  process.exit(0);
+}).catch((error) => {  process.exit(1);
 });

@@ -56,9 +56,7 @@ export function CommentsSection({ recipeId, recipeAuthorId }: CommentsSectionPro
         const data = await response.json();
         setComments(data.comments || []);
       }
-    } catch (error) {
-      console.error("Failed to fetch comments:", error);
-      toast.error("Failed to load comments");
+    } catch (error) {      toast.error("Failed to load comments");
     } finally {
       setLoading(false);
     }
@@ -95,9 +93,7 @@ export function CommentsSection({ recipeId, recipeAuthorId }: CommentsSectionPro
       } else {
         throw new Error("Failed to post comment");
       }
-    } catch (error) {
-      console.error("Error posting comment:", error);
-      toast.error("Failed to post comment");
+    } catch (error) {      toast.error("Failed to post comment");
     } finally {
       setSubmitting(false);
     }

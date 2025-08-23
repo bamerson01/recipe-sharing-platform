@@ -110,9 +110,7 @@ export default function EditProfilePage() {
         } else {
           setError('Failed to load profile');
         }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-        setError('Failed to load profile');
+      } catch (error) {        setError('Failed to load profile');
       } finally {
         setLoading(false);
       }
@@ -168,9 +166,7 @@ export default function EditProfilePage() {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to update avatar');
       }
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      setError('Failed to update avatar');
+    } catch (error) {      setError('Failed to update avatar');
     } finally {
       setUploadingAvatar(false);
     }
@@ -196,9 +192,7 @@ export default function EditProfilePage() {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to remove avatar');
       }
-    } catch (error) {
-      console.error('Error removing avatar:', error);
-      setError('Failed to remove avatar');
+    } catch (error) {      setError('Failed to remove avatar');
     } finally {
       setUploadingAvatar(false);
     }
@@ -232,9 +226,7 @@ export default function EditProfilePage() {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to update profile');
       }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      setError('Failed to update profile');
+    } catch (error) {      setError('Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -269,9 +261,7 @@ export default function EditProfilePage() {
         const errorData = await response.json();
         setPasswordError(errorData.error || 'Failed to change password');
       }
-    } catch (error) {
-      console.error('Error changing password:', error);
-      setPasswordError('Failed to change password');
+    } catch (error) {      setPasswordError('Failed to change password');
     } finally {
       setChangingPassword(false);
     }

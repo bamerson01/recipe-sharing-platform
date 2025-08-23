@@ -112,9 +112,7 @@ export async function GET() {
       results
     });
 
-  } catch (error) {
-    console.error('Error checking schema:', error);
-    return NextResponse.json({
+  } catch (error) {    return NextResponse.json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });

@@ -45,15 +45,11 @@ export async function setUsername(formData: FormData) {
       .eq('id', user.id)
       .maybeSingle();
     
-    if (fetchError) {
-      console.error('Error fetching profile:', fetchError);
-      return { ok: false, error: 'Failed to fetch profile' } as const;
+    if (fetchError) {      return { ok: false, error: 'Failed to fetch profile' } as const;
     }
     
     // If no profile exists, create one first
-    if (!currentProfile) {
-      console.log('No profile found, creating one for user:', user.id);
-      const { error: createError } = await sb
+    if (!currentProfile) {      const { error: createError } = await sb
         .from('profiles')
         .insert({
           id: user.id,
@@ -67,9 +63,7 @@ export async function setUsername(formData: FormData) {
         // Handle unique constraint violation
         if (createError.code === '23505' || createError.message?.includes('unique')) {
           return { ok: false, error: 'Username already taken' } as const;
-        }
-        console.error('Error creating profile:', createError);
-        return { ok: false, error: 'Failed to create profile' } as const;
+        }        return { ok: false, error: 'Failed to create profile' } as const;
       }
       
       // Profile created with username, we're done
@@ -96,10 +90,7 @@ export async function setUsername(formData: FormData) {
       // Handle unique constraint violation (case-insensitive)
       if (updateError.code === '23505' || updateError.message?.includes('unique')) {
         return { ok: false, error: 'Username already taken' } as const;
-      }
-      
-      console.error('Error updating username:', updateError);
-      return { ok: false, error: 'Failed to update username' } as const;
+      }      return { ok: false, error: 'Failed to update username' } as const;
     }
 
     // Revalidate all relevant paths
@@ -110,9 +101,7 @@ export async function setUsername(formData: FormData) {
     
     return { ok: true } as const;
     
-  } catch (error) {
-    console.error('Unexpected error in setUsername:', error);
-    return { ok: false, error: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, error: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -140,9 +129,7 @@ export async function checkUsernameAvailability(username: string) {
       .ilike('username', normalizedUsername)
       .maybeSingle();
     
-    if (error) {
-      console.error('Error checking username:', error);
-      return { available: false, reason: 'error' } as const;
+    if (error) {      return { available: false, reason: 'error' } as const;
     }
     
     if (data) {
@@ -151,8 +138,6 @@ export async function checkUsernameAvailability(username: string) {
     
     return { available: true } as const;
     
-  } catch (error) {
-    console.error('Error in checkUsernameAvailability:', error);
-    return { available: false, reason: 'error' } as const;
+  } catch (error) {    return { available: false, reason: 'error' } as const;
   }
 }

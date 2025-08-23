@@ -51,9 +51,7 @@ export function RecipeGrid({
       const result = await onLoadMore();
       setRecipes(prev => [...prev, ...result.recipes]);
       setHasMore(result.hasMore);
-    } catch (error) {
-      console.error('Error loading more recipes:', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
     }
   };

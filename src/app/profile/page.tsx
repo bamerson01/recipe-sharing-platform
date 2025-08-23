@@ -52,9 +52,7 @@ function ProfileContent() {
           const statsData = await statsResponse.json();
           setStats(statsData);
         }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      } finally {
+      } catch (error) {      } finally {
         setLoading(false);
       }
     };

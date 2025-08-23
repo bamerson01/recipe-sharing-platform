@@ -36,8 +36,6 @@ export async function PUT(request: NextRequest) {
     });
 
     if (passwordError) {
-      console.error('Error changing password:', passwordError);
-
       // Handle specific password errors
       if (passwordError.message.includes('password')) {
         return NextResponse.json({
@@ -56,9 +54,7 @@ export async function PUT(request: NextRequest) {
       message: 'Password changed successfully'
     });
 
-  } catch (error) {
-    console.error('Error changing password:', error);
-    return NextResponse.json({
+  } catch (error) {    return NextResponse.json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });

@@ -57,9 +57,7 @@ function MyRecipesContent() {
           setRecipes(recipesResult.recipes);
           setFilteredRecipes(recipesResult.recipes);
         }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
+      } catch (error) {      } finally {
         setLoading(false);
       }
     };
@@ -119,9 +117,7 @@ function MyRecipesContent() {
         setSuccessMessage('Recipe deleted successfully!');
         setTimeout(() => setSuccessMessage(null), 5000);
       }
-    } catch (error) {
-      console.error('Error deleting recipe:', error);
-    } finally {
+    } catch (error) {    } finally {
       setActionLoading(null);
     }
   };
@@ -137,9 +133,7 @@ function MyRecipesContent() {
         setSuccessMessage(result.message);
         setTimeout(() => setSuccessMessage(null), 5000);
       }
-    } catch (error) {
-      console.error('Error updating recipe:', error);
-    } finally {
+    } catch (error) {    } finally {
       setActionLoading(null);
     }
   };

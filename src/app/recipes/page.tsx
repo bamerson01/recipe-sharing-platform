@@ -78,9 +78,7 @@ function RecipesContent() {
         setPage(2);
         setHasMore(data.recipes && data.recipes.length === 20);
       }
-    } catch (error) {
-      console.error('Failed to load recipes:', error);
-      setRecipes([]);
+    } catch (error) {      setRecipes([]);
       setFollowingRecipes([]);
     } finally {
       setLoading(false);
@@ -114,9 +112,7 @@ function RecipesContent() {
       setRecipes(prev => [...prev, ...(data.recipes || [])]);
       setPage(page + 1);
       setHasMore(data.recipes && data.recipes.length === 20);
-    } catch (error) {
-      console.error('Failed to load more recipes:', error);
-      setHasMore(false);
+    } catch (error) {      setHasMore(false);
     }
   };
 

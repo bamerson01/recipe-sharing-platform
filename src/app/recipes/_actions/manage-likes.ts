@@ -12,15 +12,11 @@ export async function getUserLikesCount(userId: string) {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    if (error) {
-      console.error('Error fetching likes count:', error);
-      return { success: false, error: 'Failed to fetch likes count' };
+    if (error) {      return { success: false, error: 'Failed to fetch likes count' };
     }
 
     return { success: true, count: count || 0 };
 
-  } catch (error) {
-    console.error('Unexpected error fetching likes count:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }

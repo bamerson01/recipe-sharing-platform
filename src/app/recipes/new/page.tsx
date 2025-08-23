@@ -19,8 +19,6 @@ import { RecipeInput, RecipeInputType } from "@/lib/validation/recipe";
 
 type RecipeFormData = RecipeInputType;
 
-
-
 function NewRecipeForm() {
   const { user } = useAuth();
   const router = useRouter();
@@ -72,8 +70,6 @@ function NewRecipeForm() {
     }
   };
 
-
-
   const addStep = () => {
     const currentSteps = form.getValues("steps") || [];
     const newSteps = [
@@ -90,8 +86,6 @@ function NewRecipeForm() {
       form.setValue("steps", newSteps);
     }
   };
-
-
 
   const toggleCategory = (categoryId: number) => {
     const currentCategories = form.getValues("categoryIds") || [];
@@ -130,26 +124,7 @@ function NewRecipeForm() {
   };
 
   const onSubmit = async (data: RecipeFormData) => {
-    console.log('🚀 onSubmit called with data:', data);
-    console.log('📝 Raw form data:', {
-      title: data.title,
-      summary: data.summary,
-      isPublic: data.isPublic,
-      ingredients: data.ingredients,
-      steps: data.steps,
-      categoryIds: data.categoryIds
-    });
-    console.log('✅ Form is valid:', form.formState.isValid);
-    console.log('❌ Form errors:', form.formState.errors);
-    console.log('🔍 Form state details:', {
-      isDirty: form.formState.isDirty,
-      isSubmitting: form.formState.isSubmitting,
-      isValidating: form.formState.isValidating
-    });
-
-    if (!user) {
-      console.log('❌ No user found');
-      return;
+    if (!user) {      return;
     }
 
     setIsSubmitting(true);
@@ -159,10 +134,6 @@ function NewRecipeForm() {
       // Validate ingredients and steps
       const validIngredients = data.ingredients.filter(ing => ing.text.trim());
       const validSteps = data.steps.filter(step => step.text.trim());
-
-      console.log('✅ Valid ingredients:', validIngredients);
-      console.log('✅ Valid steps:', validSteps);
-
       if (validIngredients.length === 0) {
         setSubmitError("At least one ingredient is required");
         setIsSubmitting(false);
@@ -190,22 +161,7 @@ function NewRecipeForm() {
       if (imageFile) {
         formData.append('imageFile', imageFile);
       }
-
-      console.log('📤 Submitting form data:', {
-        title: data.title,
-        summary: data.summary,
-        isPublic: data.isPublic,
-        ingredients: validIngredients.length,
-        steps: validSteps.length,
-        categories: (data.categoryIds || []).length,
-        hasImage: !!imageFile
-      });
-
-      const result = await createRecipe(formData);
-      console.log('📥 Server response:', result);
-      if (result.errors) {
-        console.log('❌ Detailed server errors:', result.errors);
-      }
+      const result = await createRecipe(formData);      if (result.errors) {      }
 
       if (result.ok) {
         // Redirect to My Recipes with success message
@@ -213,9 +169,7 @@ function NewRecipeForm() {
       } else {
         setSubmitError(result.message || 'Failed to create recipe');
       }
-    } catch (error) {
-      console.error('💥 Error creating recipe:', error);
-      setSubmitError('An unexpected error occurred');
+    } catch (error) {      setSubmitError('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -534,24 +488,20 @@ function NewRecipeForm() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            onClick={() => console.log('🔘 Submit button clicked')}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Recipe...
+                Creating...
               </>
             ) : (
-              "Create Recipe"
+              <>
+                <ChefHat className="mr-2 h-4 w-4" />
+                Create Recipe
+              </>
             )}
           </Button>
         </div>
-
-        {submitError && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive">{submitError}</p>
-          </div>
-        )}
       </form>
     </div>
   );

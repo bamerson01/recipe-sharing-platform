@@ -16,28 +16,20 @@ config({ path: '.env.local' });
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing required environment variables:');
-  console.error('NEXT_PUBLIC_SUPABASE_URL:', !!supabaseUrl);
-  console.error('SUPABASE_SERVICE_ROLE_KEY:', !!supabaseServiceKey);
-  process.exit(1);
+if (!supabaseUrl || !supabaseServiceKey) {  process.exit(1);
 }
 
 // Create Supabase client with service role key
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function seedCategories() {
-  console.log('🌱 Seeding categories...');
-
   // Check if categories already exist
   const { data: existingCategories } = await supabase
     .from('categories')
     .select('id')
     .limit(1);
 
-  if (existingCategories && existingCategories.length > 0) {
-    console.log('✅ Categories already seeded, skipping...');
-    return;
+  if (existingCategories && existingCategories.length > 0) {    return;
   }
 
   // Default categories
@@ -77,25 +69,16 @@ async function seedCategories() {
     .from('categories')
     .insert(categories);
 
-  if (error) {
-    console.error('❌ Error seeding categories:', error);
-    throw error;
-  }
-
-  console.log(`✅ Successfully seeded ${categories.length} categories`);
-}
+  if (error) {    throw error;
+  }}
 
 async function createStorageBucket() {
-  console.log('🪣 Setting up storage bucket...');
-
   try {
     // Check if bucket exists
     const { data: buckets } = await supabase.storage.listBuckets();
     const publicMediaBucket = buckets?.find(b => b.name === 'public-media');
 
-    if (publicMediaBucket) {
-      console.log('✅ public-media bucket already exists');
-      return;
+    if (publicMediaBucket) {      return;
     }
 
     // Create bucket
@@ -105,38 +88,17 @@ async function createStorageBucket() {
       fileSizeLimit: 10 * 1024 * 1024, // 10MB
     });
 
-    if (error) {
-      console.error('❌ Error creating storage bucket:', error);
-      throw error;
+    if (error) {      throw error;
     }
-
-    console.log('✅ public-media bucket created successfully');
-
     // Note: RLS policies will be set via SQL in the schema
-    console.log('ℹ️  RLS policies for storage will be set via SQL schema');
-
-  } catch (error) {
-    console.error('❌ Error setting up storage:', error);
-    console.log('ℹ️  You may need to create the storage bucket manually in Supabase dashboard');
-  }
+  } catch (error) {  }
 }
 
 async function main() {
-  console.log('🚀 Starting database seeding...\n');
-
   try {
     await seedCategories();
     await createStorageBucket();
-
-    console.log('\n🎉 Database seeding completed successfully!');
-    console.log('\nNext steps:');
-    console.log('1. Verify categories were created in Supabase dashboard');
-    console.log('2. Check storage bucket exists and has public read access');
-    console.log('3. Test the application by creating a recipe');
-
-  } catch (error) {
-    console.error('\n💥 Database seeding failed:', error);
-    process.exit(1);
+  } catch (error) {    process.exit(1);
   }
 }
 

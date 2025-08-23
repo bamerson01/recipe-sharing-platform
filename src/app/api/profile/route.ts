@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-
     // Ensure profile exists (creates if missing)
     await ensureProfile();
 
@@ -31,14 +30,11 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-
     return NextResponse.json({ profile });
 
   } catch (error) {
     // Log error internally but don't expose details to client
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching profile:', error);
-    }
+    if (process.env.NODE_ENV === 'development') {    }
     return NextResponse.json({
       error: 'Internal server error'
     }, { status: 500 });
@@ -96,9 +92,7 @@ export async function PUT(request: NextRequest) {
       .eq('id', user.id);
 
     if (updateError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error updating profile:', updateError);
-      }
+      if (process.env.NODE_ENV === 'development') {      }
       return NextResponse.json({
         error: 'Failed to update profile'
       }, { status: 500 });
@@ -110,9 +104,7 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error updating profile:', error);
-    }
+    if (process.env.NODE_ENV === 'development') {    }
     return NextResponse.json({
       error: 'Internal server error'
     }, { status: 500 });

@@ -41,9 +41,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       followId: follow?.id 
     });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
@@ -97,9 +95,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       .select()
       .single();
 
-    if (insertError) {
-      console.error('Error creating follow:', insertError);
-      return NextResponse.json({ error: 'Failed to follow user' }, { status: 500 });
+    if (insertError) {      return NextResponse.json({ error: 'Failed to follow user' }, { status: 500 });
     }
 
     return NextResponse.json({ 
@@ -108,9 +104,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       message: `You are now following ${targetProfile.display_name || targetProfile.username}`
     }, { status: 201 });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
@@ -144,9 +138,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       .eq('follower_id', user.id)
       .eq('following_id', targetProfile.id);
 
-    if (deleteError) {
-      console.error('Error unfollowing:', deleteError);
-      return NextResponse.json({ error: 'Failed to unfollow user' }, { status: 500 });
+    if (deleteError) {      return NextResponse.json({ error: 'Failed to unfollow user' }, { status: 500 });
     }
 
     return NextResponse.json({ 
@@ -154,8 +146,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       message: `You have unfollowed ${targetProfile.display_name || targetProfile.username}`
     });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

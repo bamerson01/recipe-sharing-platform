@@ -61,9 +61,7 @@ function MyRecipesDashboard() {
         if (categoriesResult.ok) {
           setCategories(categoriesResult.categories);
         }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
+      } catch (error) {      } finally {
         setLoading(false);
       }
     };
@@ -126,9 +124,7 @@ function MyRecipesDashboard() {
       } else {
         alert(result.message || 'Failed to delete recipe');
       }
-    } catch (error) {
-      console.error('Error deleting recipe:', error);
-      alert('An unexpected error occurred');
+    } catch (error) {      alert('An unexpected error occurred');
     } finally {
       setActionLoading(null);
     }
@@ -147,9 +143,7 @@ function MyRecipesDashboard() {
       } else {
         alert(result.message || 'Failed to update recipe');
       }
-    } catch (error) {
-      console.error('Error updating recipe:', error);
-      alert('An unexpected error occurred');
+    } catch (error) {      alert('An unexpected error occurred');
     } finally {
       setActionLoading(null);
     }

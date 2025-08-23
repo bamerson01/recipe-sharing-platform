@@ -21,9 +21,7 @@ export async function toggleSave(recipeId: number) {
       .eq('user_id', user.id)
       .single();
 
-    if (saveCheckError && saveCheckError.code !== 'PGRST116') {
-      console.error('Error checking save status:', saveCheckError);
-      return { success: false, error: `Error checking save status: ${saveCheckError.message}` };
+    if (saveCheckError && saveCheckError.code !== 'PGRST116') {      return { success: false, error: `Error checking save status: ${saveCheckError.message}` };
     }
 
     if (existingSave) {
@@ -34,9 +32,7 @@ export async function toggleSave(recipeId: number) {
         .eq('recipe_id', recipeId)
         .eq('user_id', user.id);
 
-      if (deleteError) {
-        console.error('Error removing save:', deleteError);
-        return { success: false, error: 'Failed to remove save' };
+      if (deleteError) {        return { success: false, error: 'Failed to remove save' };
       }
 
       // Revalidate relevant paths
@@ -58,9 +54,7 @@ export async function toggleSave(recipeId: number) {
           user_id: user.id,
         });
 
-      if (insertError) {
-        console.error('Error adding save:', insertError);
-        return { success: false, error: 'Failed to add save' };
+      if (insertError) {        return { success: false, error: 'Failed to add save' };
       }
 
       // Revalidate relevant paths
@@ -75,9 +69,7 @@ export async function toggleSave(recipeId: number) {
       };
     }
 
-  } catch (error) {
-    console.error('Unexpected error in save toggle:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -132,9 +124,7 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (savesError) {
-      console.error('Error fetching saved recipes:', savesError);
-      return { success: false, error: 'Failed to fetch saved recipes' };
+    if (savesError) {      return { success: false, error: 'Failed to fetch saved recipes' };
     }
 
     // Transform the data structure
@@ -154,8 +144,6 @@ export async function getUserSavedRecipes(userId: string, limit = 20, offset = 0
 
     return { success: true, recipes: recipesWithDetails };
 
-  } catch (error) {
-    console.error('Unexpected error fetching saved recipes:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }

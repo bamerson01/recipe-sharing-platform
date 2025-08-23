@@ -21,9 +21,7 @@ export async function GET() {
       .eq('is_public', true)
       .limit(5);
 
-    if (error) {
-      console.error('Test search error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -32,8 +30,6 @@ export async function GET() {
       count: recipes?.length || 0
     });
 
-  } catch (error) {
-    console.error('Unexpected test search error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

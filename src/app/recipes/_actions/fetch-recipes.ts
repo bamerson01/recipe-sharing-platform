@@ -100,9 +100,7 @@ export async function fetchUserRecipes(userId: string) {
       .eq('author_id', userId)
       .order('created_at', { ascending: false });
 
-    if (recipesError) {
-      console.error('Error fetching recipes:', recipesError);
-      return { ok: false, message: 'Failed to fetch recipes' } as const;
+    if (recipesError) {      return { ok: false, message: 'Failed to fetch recipes' } as const;
     }
 
     // Fetch ingredients, steps, categories, and counts for each recipe
@@ -161,9 +159,7 @@ export async function fetchUserRecipes(userId: string) {
 
     return { ok: true, recipes: recipesWithDetails } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching recipes:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -261,9 +257,7 @@ export async function fetchRecipeBySlug(slug: string, userId?: string) {
 
     return { ok: true, recipe: recipeWithDetails } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching recipe:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -299,9 +293,7 @@ export async function fetchPublicRecipes(limit = 20, offset = 0, userId?: string
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (recipesError) {
-      console.error('Error fetching public recipes:', recipesError);
-      return { ok: false, message: 'Failed to fetch recipes' } as const;
+    if (recipesError) {      return { ok: false, message: 'Failed to fetch recipes' } as const;
     }
 
     // Fetch ingredients, steps, and categories for each recipe
@@ -359,9 +351,7 @@ export async function fetchPublicRecipes(limit = 20, offset = 0, userId?: string
 
     return { ok: true, recipes: recipesWithDetails } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching public recipes:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -459,9 +449,7 @@ export async function fetchRecipeById(recipeId: number, userId?: string) {
 
     return { ok: true, recipe: recipeWithDetails } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching recipe by ID:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -492,9 +480,7 @@ export async function fetchUserProfile(usernameOrId: string) {
 
     return { ok: true, profile } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching user profile:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -527,9 +513,7 @@ export async function fetchUserLikedRecipes(userId: string) {
       .eq('user_id', userId)
       .eq('recipes.is_public', true); // Only public recipes
 
-    if (likesError) {
-      console.error('Error fetching user likes:', likesError);
-      return { ok: false, message: 'Failed to fetch liked recipes' } as const;
+    if (likesError) {      return { ok: false, message: 'Failed to fetch liked recipes' } as const;
     }
 
     // Fetch categories, ingredients, and steps for each liked recipe
@@ -576,8 +560,6 @@ export async function fetchUserLikedRecipes(userId: string) {
 
     return { ok: true, recipes: recipesWithDetails } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching user liked recipes:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }

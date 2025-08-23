@@ -50,9 +50,7 @@ export default function CreatorsPage() {
         });
         setFollowingStates(states);
       }
-    } catch (error) {
-      console.error('Error fetching creators:', error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
     }
   };
@@ -85,9 +83,7 @@ export default function CreatorsPage() {
           toast.error(result.error || "Failed to follow");
         }
       }
-    } catch (error) {
-      console.error('Error toggling follow:', error);
-      toast.error("An error occurred");
+    } catch (error) {      toast.error("An error occurred");
     } finally {
       setLoadingFollows(prev => ({ ...prev, [creatorId]: false }));
     }

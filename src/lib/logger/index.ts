@@ -74,33 +74,19 @@ class Logger {
       // Use console methods based on level
       switch (level) {
         case 'ERROR':
-        case 'FATAL':
-          console.error(JSON.stringify(logData));
-          break;
-        case 'WARN':
-          console.warn(JSON.stringify(logData));
-          break;
-        default:
-          console.log(JSON.stringify(logData));
-      }
+        case 'FATAL':          break;
+        case 'WARN':          break;
+        default:      }
     } else if (this.isDevelopment) {
       // In development, use readable console output
       const formattedMessage = this.formatMessage(level, message, context);
       
       switch (level) {
         case 'ERROR':
-        case 'FATAL':
-          console.error(formattedMessage, error);
-          break;
-        case 'WARN':
-          console.warn(formattedMessage);
-          break;
-        case 'INFO':
-          console.info(formattedMessage);
-          break;
-        default:
-          console.log(formattedMessage);
-      }
+        case 'FATAL':          break;
+        case 'WARN':          break;
+        case 'INFO':          break;
+        default:      }
     }
   }
 

@@ -40,9 +40,7 @@ function ExploreContent() {
         setRecipes(data.recipes || []);
         setPage(2); // Next page will be 2
         setHasMore(data.recipes && data.recipes.length === 20);
-      } catch (error) {
-        console.error('Failed to load recipes:', error);
-        setRecipes([]);
+      } catch (error) {        setRecipes([]);
         setHasMore(false);
       } finally {
         setLoading(false);
@@ -78,9 +76,7 @@ function ExploreContent() {
       setRecipes(prev => [...prev, ...(data.recipes || [])]);
       setPage(page + 1);
       setHasMore(data.recipes && data.recipes.length === 20);
-    } catch (error) {
-      console.error('Failed to load more recipes:', error);
-      setHasMore(false);
+    } catch (error) {      setHasMore(false);
     }
   }, [searchParams, page]);
 

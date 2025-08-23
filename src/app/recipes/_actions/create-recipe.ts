@@ -25,24 +25,7 @@ export async function createRecipe(formData: FormData) {
       steps: JSON.parse(formData.get('steps') as string),
       category_ids: JSON.parse(formData.get('categoryIds') as string),
       imageFile: imageFile instanceof File ? imageFile : null,
-    };
-    
-    console.log('📥 Raw FormData analysis:');
-    console.log('  imageFile from FormData:', imageFile);
-    console.log('  imageFile type:', typeof imageFile);
-    console.log('  imageFile is File?:', imageFile instanceof File);
-    if (imageFile instanceof File) {
-      console.log('  File details:', {
-        name: imageFile.name,
-        size: imageFile.size,
-        type: imageFile.type
-      });
-    }
-    console.log('📥 Raw data created:', {
-      ...rawData,
-      imageFile: rawData.imageFile ? 'File object' : null
-    });
-
+    };    if (imageFile instanceof File) {    }
     const parsed = CreateRecipeInput.safeParse(rawData);
     if (!parsed.success) {
       return {
@@ -66,9 +49,7 @@ export async function createRecipe(formData: FormData) {
       .eq('id', user.id)
       .single();
 
-    if (!profile) {
-      console.log('Profile not found, creating new profile for user:', user.id);
-      const { error: profileError } = await supabase
+    if (!profile) {      const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: user.id,
@@ -78,12 +59,8 @@ export async function createRecipe(formData: FormData) {
           bio: null,
         });
 
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        return { ok: false, message: 'Failed to create profile' } as const;
-      }
-      console.log('Profile created successfully for user:', user.id);
-    }
+      if (profileError) {        return { ok: false, message: 'Failed to create profile' } as const;
+      }    }
 
     // Generate unique slug
     const { data: existingSlugs } = await supabase
@@ -98,16 +75,9 @@ export async function createRecipe(formData: FormData) {
 
     // Handle image upload if provided
     let imagePath: string | null = null;
-    if (parsed.data.imageFile && parsed.data.imageFile instanceof File) {
-      console.log('🖼️ Processing image upload...');
-      console.log('  File name:', parsed.data.imageFile.name);
-      console.log('  File size:', parsed.data.imageFile.size);
-      console.log('  File type:', parsed.data.imageFile.type);
-      
+    if (parsed.data.imageFile && parsed.data.imageFile instanceof File) {      
       const imageBuffer = await parsed.data.imageFile.arrayBuffer();
       const imageKey = `recipes/${user.id}/covers/${Date.now()}-${parsed.data.imageFile.name}`;
-      console.log('  Storage key:', imageKey);
-
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('public-media')
         .upload(imageKey, imageBuffer, {
@@ -115,36 +85,10 @@ export async function createRecipe(formData: FormData) {
           upsert: false,
         });
 
-      if (uploadError) {
-        console.error('❌ Image upload error:', uploadError);
-        console.error('  Error details:', {
-          message: uploadError.message,
-          status: (uploadError as any).status,
-          statusCode: (uploadError as any).statusCode
-        });
-        return { ok: false, message: `Failed to upload image: ${uploadError.message}` } as const;
-      }
-      
-      console.log('✅ Image uploaded successfully:', uploadData);
-      imagePath = imageKey;
-      console.log('  Image path set to:', imagePath);
-    } else {
-      console.log('ℹ️ No image file provided');
-    }
+      if (uploadError) {        return { ok: false, message: `Failed to upload image: ${uploadError.message}` } as const;
+      }      imagePath = imageKey;    } else {    }
 
-    // Create recipe with transaction-like approach
-    console.log('📝 Creating recipe with data:', {
-      author_id: user.id,
-      title: parsed.data.title,
-      slug,
-      summary: parsed.data.summary,
-      cover_image_key: imagePath,
-      is_public: parsed.data.is_public,
-      difficulty: parsed.data.difficulty,
-      prep_time: parsed.data.prep_time,
-      cook_time: parsed.data.cook_time,
-    });
-    
+    // Create recipe with transaction-like approach    
     const { data: recipe, error: recipeError } = await supabase
       .from('recipes')
       .insert({
@@ -161,9 +105,7 @@ export async function createRecipe(formData: FormData) {
       .select()
       .single();
 
-    if (recipeError || !recipe) {
-      console.error('Recipe creation error:', recipeError);
-      return { ok: false, message: 'Failed to create recipe' } as const;
+    if (recipeError || !recipe) {      return { ok: false, message: 'Failed to create recipe' } as const;
     }
 
     // Insert ingredients
@@ -178,9 +120,7 @@ export async function createRecipe(formData: FormData) {
         .from('recipe_ingredients')
         .insert(ingredientsData);
 
-      if (ingredientsError) {
-        console.error('Ingredients error:', ingredientsError);
-        // Continue anyway, recipe was created
+      if (ingredientsError) {        // Continue anyway, recipe was created
       }
     }
 
@@ -196,9 +136,7 @@ export async function createRecipe(formData: FormData) {
         .from('recipe_steps')
         .insert(stepsData);
 
-      if (stepsError) {
-        console.error('Steps error:', stepsError);
-        // Continue anyway, recipe was created
+      if (stepsError) {        // Continue anyway, recipe was created
       }
     }
 
@@ -213,9 +151,7 @@ export async function createRecipe(formData: FormData) {
         .from('recipe_categories')
         .insert(categoryData);
 
-      if (categoryError) {
-        console.error('Category error:', categoryError);
-        // Continue anyway, recipe was created
+      if (categoryError) {        // Continue anyway, recipe was created
       }
     }
 
@@ -230,8 +166,6 @@ export async function createRecipe(formData: FormData) {
       message: 'Recipe created successfully!'
     } as const;
 
-  } catch (error) {
-    console.error('Unexpected error creating recipe:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }

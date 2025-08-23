@@ -53,9 +53,7 @@ export async function GET(request: NextRequest) {
       bucket_name: 'public-media'
     });
 
-  } catch (error) {
-    console.error('Error checking storage:', error);
-    return NextResponse.json({
+  } catch (error) {    return NextResponse.json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });

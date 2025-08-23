@@ -17,16 +17,12 @@ export async function fetchCategories() {
       .select('id, name, slug')
       .order('name');
 
-    if (error) {
-      console.error('Error fetching categories:', error);
-      return { ok: false, message: 'Failed to fetch categories' } as const;
+    if (error) {      return { ok: false, message: 'Failed to fetch categories' } as const;
     }
 
     return { ok: true, categories: categories || [] } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching categories:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -81,15 +77,11 @@ export async function seedCategories() {
       .from('categories')
       .insert(defaultCategories);
 
-    if (error) {
-      console.error('Error seeding categories:', error);
-      return { ok: false, message: 'Failed to seed categories' } as const;
+    if (error) {      return { ok: false, message: 'Failed to seed categories' } as const;
     }
 
     return { ok: true, message: 'Categories seeded successfully' } as const;
 
-  } catch (error) {
-    console.error('Unexpected error seeding categories:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }

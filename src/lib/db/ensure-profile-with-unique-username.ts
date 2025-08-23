@@ -32,9 +32,7 @@ export async function ensureProfileWithUniqueUsername() {
     const sb = await getServerSupabase();
     const { data: { user } } = await sb.auth.getUser();
 
-    if (!user) {
-      console.log('ensureProfile: No authenticated user');
-      return;
+    if (!user) {      return;
     }
 
     // If row exists, bail early
@@ -44,13 +42,8 @@ export async function ensureProfileWithUniqueUsername() {
       .eq('id', user.id)
       .maybeSingle();
 
-    if (existing) {
-      console.log('ensureProfile: Profile already exists for user:', user.id);
-      return;
+    if (existing) {      return;
     }
-
-    console.log('ensureProfile: Creating missing profile for user:', user.id);
-
     // Generate base username from email or metadata
     const baseUsername = (user.user_metadata?.username as string | undefined)
       ?? user.email?.split('@')[0]
@@ -66,9 +59,6 @@ export async function ensureProfileWithUniqueUsername() {
     
     // Generate unique username
     const uniqueUsername = await generateUniqueUsername(sanitizedBase, sb);
-    
-    console.log(`ensureProfile: Generated unique username: ${uniqueUsername} for base: ${sanitizedBase}`);
-
     const { error } = await sb.from('profiles').insert({
       id: user.id,
       username: uniqueUsername,
@@ -77,14 +67,7 @@ export async function ensureProfileWithUniqueUsername() {
       avatar_key: null,
     });
 
-    if (error) {
-      console.error('ensureProfile: Failed to create profile:', error);
-      throw error;
-    }
-
-    console.log('ensureProfile: Profile created successfully for user:', user.id);
-  } catch (error) {
-    console.error('ensureProfile: Unexpected error:', error);
-    // Don't throw - this is a helper function that shouldn't break the app
+    if (error) {      throw error;
+    }  } catch (error) {    // Don't throw - this is a helper function that shouldn't break the app
   }
 }

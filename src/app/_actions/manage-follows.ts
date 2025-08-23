@@ -56,9 +56,7 @@ export async function followUser(targetUserId: string) {
         following_id: targetUserId,
       });
 
-    if (followError) {
-      console.error('Error following user:', followError);
-      return { success: false, error: 'Failed to follow user' };
+    if (followError) {      return { success: false, error: 'Failed to follow user' };
     }
 
     // Revalidate relevant paths
@@ -68,9 +66,7 @@ export async function followUser(targetUserId: string) {
 
     return { success: true, message: 'User followed successfully' };
 
-  } catch (error) {
-    console.error('Unexpected error following user:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -98,9 +94,7 @@ export async function unfollowUser(targetUserId: string) {
       .eq('follower_id', user.id)
       .eq('following_id', targetUserId);
 
-    if (unfollowError) {
-      console.error('Error unfollowing user:', unfollowError);
-      return { success: false, error: 'Failed to unfollow user' };
+    if (unfollowError) {      return { success: false, error: 'Failed to unfollow user' };
     }
 
     // Revalidate relevant paths
@@ -110,9 +104,7 @@ export async function unfollowUser(targetUserId: string) {
 
     return { success: true, message: 'User unfollowed successfully' };
 
-  } catch (error) {
-    console.error('Unexpected error unfollowing user:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -142,9 +134,7 @@ export async function getFollowers(userId: string, page: number = 1, limit: numb
       .order('created_at', { ascending: false })
       .range(offset, offset + validatedLimit - 1);
 
-    if (followersError) {
-      console.error('Error fetching followers:', followersError);
-      return { success: false, error: 'Failed to fetch followers' };
+    if (followersError) {      return { success: false, error: 'Failed to fetch followers' };
     }
 
     // Transform data - fetch profile data separately
@@ -158,9 +148,7 @@ export async function getFollowers(userId: string, page: number = 1, limit: numb
         .select('id, username, display_name, avatar_key, bio')
         .in('id', followerIds);
       
-      if (profilesError) {
-        console.error('Error fetching follower profiles:', profilesError);
-        return { success: false, error: 'Failed to fetch follower profiles' };
+      if (profilesError) {        return { success: false, error: 'Failed to fetch follower profiles' };
       }
       
       // Create a map for quick lookup
@@ -190,9 +178,7 @@ export async function getFollowers(userId: string, page: number = 1, limit: numb
       limit: validatedLimit,
     };
 
-  } catch (error) {
-    console.error('Unexpected error fetching followers:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -222,9 +208,7 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
       .order('created_at', { ascending: false })
       .range(offset, offset + validatedLimit - 1);
 
-    if (followingError) {
-      console.error('Error fetching following:', followingError);
-      return { success: false, error: 'Failed to fetch following' };
+    if (followingError) {      return { success: false, error: 'Failed to fetch following' };
     }
 
     // Transform data - fetch profile data separately
@@ -238,9 +222,7 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
         .select('id, username, display_name, avatar_key, bio')
         .in('id', followedIds);
       
-      if (profilesError) {
-        console.error('Error fetching followed profiles:', profilesError);
-        return { success: false, error: 'Failed to fetch followed profiles' };
+      if (profilesError) {        return { success: false, error: 'Failed to fetch followed profiles' };
       }
       
       // Create a map for quick lookup
@@ -270,9 +252,7 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
       limit: validatedLimit,
     };
 
-  } catch (error) {
-    console.error('Unexpected error fetching following:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -295,9 +275,7 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
       .select('following_id')
       .eq('follower_id', user.id);
 
-    if (followingError) {
-      console.error('Error fetching following users:', followingError);
-      return { success: false, error: 'Failed to fetch following users' };
+    if (followingError) {      return { success: false, error: 'Failed to fetch following users' };
     }
 
     // If not following anyone, return empty result
@@ -339,9 +317,7 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (recipesError) {
-      console.error('Error fetching recipes from following:', recipesError);
-      return { success: false, error: 'Failed to fetch recipes' };
+    if (recipesError) {      return { success: false, error: 'Failed to fetch recipes' };
     }
 
     // Transform data
@@ -358,8 +334,6 @@ export async function getRecentFromFollowing(page: number = 1, limit: number = 2
       limit,
     };
 
-  } catch (error) {
-    console.error('Unexpected error fetching recipes from following:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }

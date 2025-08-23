@@ -30,18 +30,14 @@ export async function GET(
       .eq('user_id', user.id)
       .single();
 
-    if (likeError && likeError.code !== 'PGRST116') {
-      console.error('Error checking like status:', likeError);
-      return NextResponse.json({ error: 'Error checking like status' }, { status: 500 });
+    if (likeError && likeError.code !== 'PGRST116') {      return NextResponse.json({ error: 'Error checking like status' }, { status: 500 });
     }
 
     return NextResponse.json({
       liked: !!like
     });
 
-  } catch (error) {
-    console.error('Unexpected error checking like status:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
@@ -101,9 +97,7 @@ export async function POST(
         .eq('recipe_id', recipeId)
         .eq('user_id', user.id);
 
-      if (deleteError) {
-        console.error('Error removing like:', deleteError);
-        return NextResponse.json({ error: 'Failed to remove like' }, { status: 500 });
+      if (deleteError) {        return NextResponse.json({ error: 'Failed to remove like' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -119,9 +113,7 @@ export async function POST(
           user_id: user.id,
         });
 
-      if (insertError) {
-        console.error('Error adding like:', insertError);
-        return NextResponse.json({ error: 'Failed to add like' }, { status: 500 });
+      if (insertError) {        return NextResponse.json({ error: 'Failed to add like' }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -130,8 +122,6 @@ export async function POST(
       });
     }
 
-  } catch (error) {
-    console.error('Unexpected error in like toggle:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

@@ -50,12 +50,12 @@ export default function MyCookbookPage() {
       const savedRecipes = savedData.recipes || [];
       
       // Mark recipes as created by user or saved
-      const markedCreated = createdRecipes.map(r => ({ ...r, isOwned: true }));
-      const markedSaved = savedRecipes.map(r => ({ ...r, isOwned: false }));
+      const markedCreated = createdRecipes.map((r: RecipeSummary) => ({ ...r, isOwned: true }));
+      const markedSaved = savedRecipes.map((r: RecipeSummary) => ({ ...r, isOwned: false }));
       
       // Combine and deduplicate based on recipe ID
-      const combinedMap = new Map();
-      [...markedCreated, ...markedSaved].forEach(recipe => {
+      const combinedMap = new Map<number, RecipeSummary>();
+      [...markedCreated, ...markedSaved].forEach((recipe: RecipeSummary) => {
         if (!combinedMap.has(recipe.id) || recipe.isOwned) {
           combinedMap.set(recipe.id, recipe);
         }
@@ -63,7 +63,6 @@ export default function MyCookbookPage() {
       
       setAllRecipes(Array.from(combinedMap.values()));
     } catch (error) {
-      console.error('Error fetching recipes:', error);
     } finally {
       setLoading(false);
     }
@@ -84,9 +83,7 @@ export default function MyCookbookPage() {
       if (response.ok) {
         fetchAllRecipes();
       }
-    } catch (error) {
-      console.error('Error deleting recipe:', error);
-    }
+    } catch (error) {    }
   };
 
   const handleToggleVisibility = async (id: number, isPublic: boolean) => {
@@ -100,9 +97,7 @@ export default function MyCookbookPage() {
       if (response.ok) {
         fetchAllRecipes();
       }
-    } catch (error) {
-      console.error('Error toggling visibility:', error);
-    }
+    } catch (error) {    }
   };
 
   const handleSaveChange = (recipeId: number, saved: boolean) => {

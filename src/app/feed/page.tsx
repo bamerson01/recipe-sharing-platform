@@ -65,9 +65,7 @@ export default function FeedPage() {
 
       // Load popular and recent feeds
       await loadPublicFeeds();
-    } catch (error) {
-      console.error('Error loading feed:', error);
-      toast.error('Failed to load feed');
+    } catch (error) {      toast.error('Failed to load feed');
     } finally {
       setLoading(false);
     }
@@ -88,9 +86,7 @@ export default function FeedPage() {
         const recentData = await recentResponse.json();
         setRecentRecipes(recentData.recipes || []);
       }
-    } catch (error) {
-      console.error('Error loading public feeds:', error);
-    }
+    } catch (error) {    }
   };
 
   const handleViewRecipe = (recipe: Recipe) => {

@@ -45,9 +45,7 @@ export const SaveButton = memo(function SaveButton({
         const data = await response.json();
         setSaved(data.saved);
       }
-    } catch (error) {
-      console.error('Error checking save status:', error);
-    }
+    } catch (error) {    }
   };
 
   const handleSaveToggle = async (e: React.MouseEvent) => {
@@ -62,21 +60,13 @@ export const SaveButton = memo(function SaveButton({
     if (isLoading) return;
 
     setIsLoading(true);
-    try {
-      console.log('Attempting to toggle save for recipe:', recipeId);
-      const result = await toggleSave(recipeId);
-      console.log('Toggle save result:', result);
-
+    try {      const result = await toggleSave(recipeId);
       if (result.success) {
         setSaved(result.saved || false);
         // Call parent callback if provided
         onSaveChange?.(result.saved || false);
-      } else {
-        console.error('Error toggling save:', result.error || 'Unknown error');
-      }
-    } catch (error) {
-      console.error('Error toggling save:', error);
-    } finally {
+      } else {      }
+    } catch (error) {    } finally {
       setIsLoading(false);
     }
   };

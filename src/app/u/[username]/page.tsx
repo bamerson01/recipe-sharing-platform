@@ -108,9 +108,7 @@ export default function UserProfilePage() {
           }
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error loading user data:', error);
-        }
+        if (process.env.NODE_ENV === 'development') {        }
       } finally {
         setLoading(false);
       }

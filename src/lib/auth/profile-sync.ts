@@ -24,9 +24,7 @@ export async function syncUserProfile(user: User) {
         avatar_url: user.user_metadata?.avatar_url || null,
       });
 
-    if (error) {
-      console.error("Error creating profile:", error);
-      return { error };
+    if (error) {      return { error };
     }
 
     return { success: true };

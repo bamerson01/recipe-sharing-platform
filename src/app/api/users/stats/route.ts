@@ -51,9 +51,7 @@ export async function GET(request: NextRequest) {
       following: followingCount || 0
     });
 
-  } catch (error) {
-    console.error('Error fetching user stats:', error);
-    return NextResponse.json(
+  } catch (error) {    return NextResponse.json(
       { error: 'Failed to fetch stats' },
       { status: 500 }
     );

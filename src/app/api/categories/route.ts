@@ -16,15 +16,11 @@ export async function GET() {
       `)
       .order('name');
 
-    if (error) {
-      console.error('Error fetching categories:', error);
-      return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
+    if (error) {      return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
     }
 
     return NextResponse.json({ categories: categories || [] });
 
-  } catch (error) {
-    console.error('Unexpected error fetching categories:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

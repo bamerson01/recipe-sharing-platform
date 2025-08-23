@@ -75,9 +75,7 @@ export async function fetchRecipeSummaries(options: {
 
   const { data: recipes, error, count } = await query;
 
-  if (error) {
-    console.error('Error fetching recipes:', error);
-    return { recipes: [], hasMore: false };
+  if (error) {    return { recipes: [], hasMore: false };
   }
 
   // Fetch categories for each recipe
@@ -185,9 +183,7 @@ export async function fetchSavedRecipes(userId: string, limit = 20, offset = 0) 
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (error) {
-    console.error('Error fetching saved recipes:', error);
-    return { recipes: [], hasMore: false };
+  if (error) {    return { recipes: [], hasMore: false };
   }
 
   // Transform and fetch additional details
@@ -271,9 +267,7 @@ export async function fetchLikedRecipes(userId: string, limit = 20, offset = 0) 
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (error) {
-    console.error('Error fetching liked recipes:', error);
-    return { recipes: [], hasMore: false };
+  if (error) {    return { recipes: [], hasMore: false };
   }
 
   // Transform and fetch additional details

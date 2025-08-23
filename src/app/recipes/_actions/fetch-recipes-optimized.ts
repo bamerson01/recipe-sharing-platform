@@ -111,9 +111,7 @@ export async function fetchRecipesOptimized({
 
     const { data: recipes, error, count } = await query;
 
-    if (error) {
-      console.error('Error fetching recipes:', error);
-      return { 
+    if (error) {      return { 
         ok: false, 
         message: 'Failed to fetch recipes',
         recipes: [],
@@ -144,9 +142,7 @@ export async function fetchRecipesOptimized({
       hasPreviousPage: page > 1
     } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching recipes:', error);
-    return { 
+  } catch (error) {    return { 
       ok: false, 
       message: 'An unexpected error occurred',
       recipes: [],
@@ -250,9 +246,7 @@ export async function fetchRecipeDetailsOptimized(slug: string, userId?: string)
 
     return { ok: true, recipe: transformedRecipe } as const;
 
-  } catch (error) {
-    console.error('Unexpected error fetching recipe details:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -282,8 +276,6 @@ export async function fetchUserInteractions(recipeIds: number[], userId: string)
       likes: new Set(likesResult.data?.map(l => l.recipe_id) || []),
       saves: new Set(savesResult.data?.map(s => s.recipe_id) || [])
     };
-  } catch (error) {
-    console.error('Error fetching user interactions:', error);
-    return { likes: new Set<number>(), saves: new Set<number>() };
+  } catch (error) {    return { likes: new Set<number>(), saves: new Set<number>() };
   }
 }

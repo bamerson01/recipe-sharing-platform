@@ -43,9 +43,7 @@ export const LikeButton = memo(function LikeButton({
         const data = await response.json();
         setLiked(data.liked);
       }
-    } catch (error) {
-      console.error('Error checking like status:', error);
-    }
+    } catch (error) {    }
   };
 
   const handleLikeToggle = async (e: React.MouseEvent) => {
@@ -76,12 +74,8 @@ export const LikeButton = memo(function LikeButton({
         // Call parent callback if provided
         onLikeChange?.(newLiked, newCount);
       } else {
-        const errorData = await response.json();
-        console.error('Error toggling like:', errorData.error);
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-    } finally {
+        const errorData = await response.json();      }
+    } catch (error) {    } finally {
       setIsLoading(false);
     }
   };

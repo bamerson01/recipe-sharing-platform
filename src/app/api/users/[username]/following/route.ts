@@ -45,9 +45,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (error) {
-      console.error('Error fetching following:', error);
-      return NextResponse.json({ error: 'Failed to fetch following' }, { status: 500 });
+    if (error) {      return NextResponse.json({ error: 'Failed to fetch following' }, { status: 500 });
     }
 
     // Get current user to check if they follow these users
@@ -95,8 +93,6 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

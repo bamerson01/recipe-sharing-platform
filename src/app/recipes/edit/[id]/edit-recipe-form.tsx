@@ -190,9 +190,7 @@ export function EditRecipeForm({ recipe, categories }: EditRecipeFormProps) {
       } else {
         setSubmitError(result.message || 'Failed to update recipe');
       }
-    } catch (error) {
-      console.error('Error updating recipe:', error);
-      setSubmitError('An unexpected error occurred');
+    } catch (error) {      setSubmitError('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }

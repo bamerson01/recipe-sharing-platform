@@ -53,9 +53,7 @@ export function SearchFilters({
           const data = await response.json();
           setCategories(data.categories || []);
         }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      } finally {
+      } catch (error) {      } finally {
         setLoading(false);
       }
     };

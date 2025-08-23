@@ -58,9 +58,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       .eq('recipe_id', recipeId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching comments:', error);
-      return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 });
+    if (error) {      return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 });
     }
 
     // Check if current user has liked each comment
@@ -93,9 +91,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     return NextResponse.json({ comments: transformedComments || [] });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
@@ -174,9 +170,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       `)
       .single();
 
-    if (insertError) {
-      console.error('Error creating comment:', insertError);
-      return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 });
+    if (insertError) {      return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 });
     }
 
     // Transform author data if it's an array
@@ -188,9 +182,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     return NextResponse.json({ comment: transformedComment }, { status: 201 });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
@@ -251,9 +243,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       `)
       .single();
 
-    if (updateError) {
-      console.error('Error updating comment:', updateError);
-      return NextResponse.json({ error: 'Failed to update comment' }, { status: 500 });
+    if (updateError) {      return NextResponse.json({ error: 'Failed to update comment' }, { status: 500 });
     }
 
     if (!updatedComment) {
@@ -269,9 +259,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     return NextResponse.json({ comment: transformedComment });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
@@ -309,15 +297,11 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       .eq('id', commentId)
       .eq('recipe_id', recipeId);
 
-    if (deleteError) {
-      console.error('Error deleting comment:', deleteError);
-      return NextResponse.json({ error: 'Failed to delete comment' }, { status: 500 });
+    if (deleteError) {      return NextResponse.json({ error: 'Failed to delete comment' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

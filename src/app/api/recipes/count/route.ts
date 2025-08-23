@@ -20,9 +20,7 @@ export async function GET() {
       .select('*', { count: 'exact', head: true })
       .eq('author_id', user.id);
 
-    if (recipeError) {
-      console.error('Error fetching recipe count:', recipeError);
-      return NextResponse.json(
+    if (recipeError) {      return NextResponse.json(
         { error: 'Failed to fetch recipe count' },
         { status: 500 }
       );
@@ -35,9 +33,7 @@ export async function GET() {
       .eq('user_id', user.id);
 
     let savedCount = savedCountResult || 0;
-    if (savedError) {
-      console.error('Error fetching saved count:', savedError);
-      // If saves table doesn't exist, return 0
+    if (savedError) {      // If saves table doesn't exist, return 0
       savedCount = 0;
     }
 
@@ -47,9 +43,7 @@ export async function GET() {
       .select('like_count')
       .eq('author_id', user.id);
 
-    if (likesError) {
-      console.error('Error fetching likes:', likesError);
-      return NextResponse.json(
+    if (likesError) {      return NextResponse.json(
         { error: 'Failed to fetch likes' },
         { status: 500 }
       );
@@ -63,9 +57,7 @@ export async function GET() {
       totalLikes
     });
 
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json(
+  } catch (error) {    return NextResponse.json(
       { error: 'An unexpected error occurred' },
       { status: 500 }
     );

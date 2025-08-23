@@ -28,9 +28,7 @@ export function SavedRecipesGrid() {
         if (result.success && result.recipes) {
           setRecipes(result.recipes);
         }
-      } catch (error) {
-        console.error('Error loading saved recipes:', error);
-      } finally {
+      } catch (error) {      } finally {
         setLoading(false);
       }
     };

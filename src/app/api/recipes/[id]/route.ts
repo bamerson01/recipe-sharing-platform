@@ -147,8 +147,6 @@ export async function GET(
 
     return NextResponse.json(recipeFull);
 
-  } catch (error) {
-    console.error('Error fetching recipe:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error) {    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

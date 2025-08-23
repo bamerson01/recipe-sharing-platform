@@ -74,13 +74,9 @@ export function FollowersList({ userId }: FollowersListProps) {
       if (result.success) {
         // Update the local state to show they're now following
         setFollowingStates(prev => ({ ...prev, [followerId]: false }));
-      } else {
-        console.error('Failed to follow back:', result.error);
-        setFollowingStates(prev => ({ ...prev, [followerId]: false }));
+      } else {        setFollowingStates(prev => ({ ...prev, [followerId]: false }));
       }
-    } catch (error) {
-      console.error('Error following back:', error);
-      setFollowingStates(prev => ({ ...prev, [followerId]: false }));
+    } catch (error) {      setFollowingStates(prev => ({ ...prev, [followerId]: false }));
     }
   };
 

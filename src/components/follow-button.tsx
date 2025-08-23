@@ -47,9 +47,7 @@ export function FollowButton({
         const data = await response.json();
         setIsFollowing(data.isFollowing);
       }
-    } catch (error) {
-      console.error("Failed to check follow status:", error);
-    } finally {
+    } catch (error) {    } finally {
       setLoading(false);
     }
   };
@@ -81,9 +79,7 @@ export function FollowButton({
         const error = await response.json();
         toast.error(error.error || "Failed to update follow status");
       }
-    } catch (error) {
-      console.error("Error updating follow status:", error);
-      toast.error("Failed to update follow status");
+    } catch (error) {      toast.error("Failed to update follow status");
     } finally {
       setUpdating(false);
     }

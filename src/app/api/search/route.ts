@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/db/server';
+import { Database } from '@/types/database';
+import { RecipeSummary, CategoryMini } from '@/types/recipe';
 
 export async function GET(request: NextRequest) {
   try {
@@ -100,9 +102,7 @@ export async function GET(request: NextRequest) {
     const { data: recipes, error } = await queryBuilder;
 
     if (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Search error:', error);
-      }
+      if (process.env.NODE_ENV === 'development') {      }
       return NextResponse.json({ error: 'Search failed' }, { status: 500 });
     }
 
@@ -157,37 +157,59 @@ export async function GET(request: NextRequest) {
     
     // Create lookup maps for efficient data association
     const authorsMap = new Map((authors || []).map(a => [a.id, a]));
-    const categoriesMap = new Map<number, any[]>();
-    const ingredientsMap = new Map<number, any[]>();
-    const stepsMap = new Map<number, any[]>();
+    const categoriesMap = new Map<number, CategoryMini[]>();
+    const ingredientsMap = new Map<number, Database['public']['Tables']['recipe_ingredients']['Row'][]>();
+    const stepsMap = new Map<number, Database['public']['Tables']['recipe_steps']['Row'][]>();
     
     // Group categories by recipe
-    (allCategories || []).forEach((item: any) => {
+    interface CategoryRow {
+      recipe_id: number;
+      category_id: number;
+      categories: CategoryMini | CategoryMini[];
+    }
+    (allCategories as CategoryRow[] | null || []).forEach((item: CategoryRow) => {
       if (!categoriesMap.has(item.recipe_id)) {
         categoriesMap.set(item.recipe_id, []);
       }
-      categoriesMap.get(item.recipe_id)?.push(item.categories);
+      const category = Array.isArray(item.categories) ? item.categories[0] : item.categories;
+      if (category) {
+        categoriesMap.get(item.recipe_id)?.push(category);
+      }
     });
     
     // Group ingredients by recipe
-    (allIngredients || []).forEach((item: any) => {
+    interface IngredientRow {
+      recipe_id: number;
+      id: number;
+      position: number;
+      text: string;
+    }
+    (allIngredients || []).forEach((item: IngredientRow) => {
       if (!ingredientsMap.has(item.recipe_id)) {
         ingredientsMap.set(item.recipe_id, []);
       }
       ingredientsMap.get(item.recipe_id)?.push({
         id: item.id,
+        recipe_id: item.recipe_id,
         position: item.position,
         text: item.text
       });
     });
     
     // Group steps by recipe
-    (allSteps || []).forEach((item: any) => {
+    interface StepRow {
+      recipe_id: number;
+      id: number;
+      position: number;
+      text: string;
+    }
+    (allSteps || []).forEach((item: StepRow) => {
       if (!stepsMap.has(item.recipe_id)) {
         stepsMap.set(item.recipe_id, []);
       }
       stepsMap.get(item.recipe_id)?.push({
         id: item.id,
+        recipe_id: item.recipe_id,
         position: item.position,
         text: item.text
       });
@@ -236,9 +258,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Unexpected search error:', error);
-    }
+    if (process.env.NODE_ENV === 'development') {    }
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

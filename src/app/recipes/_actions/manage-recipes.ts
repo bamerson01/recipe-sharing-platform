@@ -65,16 +65,9 @@ export async function updateRecipe(formData: FormData) {
 
     // Handle image upload if provided
     let imagePath = existingRecipe.cover_image_key;
-    if (parsed.data.imageFile && parsed.data.imageFile instanceof File) {
-      console.log('🖼️ Processing image upload for update...');
-      console.log('  File name:', parsed.data.imageFile.name);
-      console.log('  File size:', parsed.data.imageFile.size);
-      console.log('  File type:', parsed.data.imageFile.type);
-      
+    if (parsed.data.imageFile && parsed.data.imageFile instanceof File) {      
       const imageBuffer = await parsed.data.imageFile.arrayBuffer();
       const imageKey = `recipes/${user.id}/covers/${Date.now()}-${parsed.data.imageFile.name}`;
-      console.log('  Storage key:', imageKey);
-
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('public-media')
         .upload(imageKey, imageBuffer, {
@@ -82,29 +75,16 @@ export async function updateRecipe(formData: FormData) {
           upsert: false,
         });
 
-      if (uploadError) {
-        console.error('❌ Image upload error:', uploadError);
-        return { ok: false, message: `Failed to upload image: ${uploadError.message}` } as const;
+      if (uploadError) {        return { ok: false, message: `Failed to upload image: ${uploadError.message}` } as const;
       }
-      
-      console.log('✅ Image uploaded successfully:', uploadData);
-
       // Delete old image if it exists
-      if (existingRecipe.cover_image_key) {
-        console.log('🗑️ Deleting old image:', existingRecipe.cover_image_key);
-        const { error: deleteError } = await supabase.storage
+      if (existingRecipe.cover_image_key) {        const { error: deleteError } = await supabase.storage
           .from('public-media')
           .remove([existingRecipe.cover_image_key]);
-        if (deleteError) {
-          console.error('⚠️ Failed to delete old image:', deleteError);
-        }
+        if (deleteError) {        }
       }
 
-      imagePath = imageKey;
-      console.log('  New image path:', imagePath);
-    } else {
-      console.log('ℹ️ No new image provided, keeping existing:', imagePath);
-    }
+      imagePath = imageKey;    } else {    }
 
     // Update recipe
     const { error: recipeError } = await supabase
@@ -120,9 +100,7 @@ export async function updateRecipe(formData: FormData) {
       })
       .eq('id', parsed.data.id);
 
-    if (recipeError) {
-      console.error('Recipe update error:', recipeError);
-      return { ok: false, message: 'Failed to update recipe' } as const;
+    if (recipeError) {      return { ok: false, message: 'Failed to update recipe' } as const;
     }
 
     // Delete existing ingredients, steps, and categories
@@ -142,9 +120,7 @@ export async function updateRecipe(formData: FormData) {
         .from('recipe_ingredients')
         .insert(ingredientsData);
 
-      if (ingredientsError) {
-        console.error('Ingredients error:', ingredientsError);
-      }
+      if (ingredientsError) {      }
     }
 
     // Insert new steps
@@ -159,9 +135,7 @@ export async function updateRecipe(formData: FormData) {
         .from('recipe_steps')
         .insert(stepsData);
 
-      if (stepsError) {
-        console.error('Steps error:', stepsError);
-      }
+      if (stepsError) {      }
     }
 
     // Insert new category relationships
@@ -175,9 +149,7 @@ export async function updateRecipe(formData: FormData) {
         .from('recipe_categories')
         .insert(categoryData);
 
-      if (categoryError) {
-        console.error('Category error:', categoryError);
-      }
+      if (categoryError) {      }
     }
 
     // Revalidate relevant paths
@@ -191,9 +163,7 @@ export async function updateRecipe(formData: FormData) {
       message: 'Recipe updated successfully!'
     } as const;
 
-  } catch (error) {
-    console.error('Unexpected error updating recipe:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -228,9 +198,7 @@ export async function deleteRecipe(recipeId: number) {
       .delete()
       .eq('id', recipeId);
 
-    if (deleteError) {
-      console.error('Recipe deletion error:', deleteError);
-      return { ok: false, message: 'Failed to delete recipe' } as const;
+    if (deleteError) {      return { ok: false, message: 'Failed to delete recipe' } as const;
     }
 
     // Delete image from storage if it exists
@@ -249,9 +217,7 @@ export async function deleteRecipe(recipeId: number) {
       message: 'Recipe deleted successfully!'
     } as const;
 
-  } catch (error) {
-    console.error('Unexpected error deleting recipe:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }
 
@@ -286,9 +252,7 @@ export async function toggleRecipeVisibility(recipeId: number) {
       .update({ is_public: !recipe.is_public })
       .eq('id', recipeId);
 
-    if (updateError) {
-      console.error('Visibility toggle error:', updateError);
-      return { ok: false, message: 'Failed to update recipe' } as const;
+    if (updateError) {      return { ok: false, message: 'Failed to update recipe' } as const;
     }
 
     // Revalidate relevant paths
@@ -301,8 +265,6 @@ export async function toggleRecipeVisibility(recipeId: number) {
       message: `Recipe ${!recipe.is_public ? 'published' : 'made private'} successfully!`
     } as const;
 
-  } catch (error) {
-    console.error('Unexpected error toggling recipe visibility:', error);
-    return { ok: false, message: 'An unexpected error occurred' } as const;
+  } catch (error) {    return { ok: false, message: 'An unexpected error occurred' } as const;
   }
 }

@@ -49,9 +49,7 @@ export async function getWhoLikedMyRecipes(page: number = 1, limit: number = 20,
       .select('id')
       .eq('author_id', user.id);
 
-    if (recipesError) {
-      console.error('Error fetching user recipes:', recipesError);
-      return { success: false, error: 'Failed to fetch user recipes' };
+    if (recipesError) {      return { success: false, error: 'Failed to fetch user recipes' };
     }
 
     const recipeIds = userRecipes?.map(r => r.id) || [];
@@ -84,9 +82,7 @@ export async function getWhoLikedMyRecipes(page: number = 1, limit: number = 20,
 
     const { data: likes, error: likesError, count } = await query.range(offset, offset + validatedLimit - 1);
 
-    if (likesError) {
-      console.error('Error fetching likes on my recipes:', likesError);
-      return { success: false, error: 'Failed to fetch likes' };
+    if (likesError) {      return { success: false, error: 'Failed to fetch likes' };
     }
 
     // Transform data - fetch profile and recipe data separately
@@ -101,9 +97,7 @@ export async function getWhoLikedMyRecipes(page: number = 1, limit: number = 20,
         .select('id, username, display_name, avatar_key')
         .in('id', userIds);
       
-      if (profilesError) {
-        console.error('Error fetching liker profiles:', profilesError);
-        return { success: false, error: 'Failed to fetch liker profiles' };
+      if (profilesError) {        return { success: false, error: 'Failed to fetch liker profiles' };
       }
       
       // Fetch recipe data for all liked recipes
@@ -112,9 +106,7 @@ export async function getWhoLikedMyRecipes(page: number = 1, limit: number = 20,
         .select('id, title, slug')
         .in('id', recipeIds);
       
-      if (recipesError) {
-        console.error('Error fetching liked recipes:', recipesError);
-        return { success: false, error: 'Failed to fetch liked recipes' };
+      if (recipesError) {        return { success: false, error: 'Failed to fetch liked recipes' };
       }
       
       // Create maps for quick lookup
@@ -149,9 +141,7 @@ export async function getWhoLikedMyRecipes(page: number = 1, limit: number = 20,
       limit: validatedLimit,
     };
 
-  } catch (error) {
-    console.error('Unexpected error fetching likes on my recipes:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -180,9 +170,7 @@ export async function getWhoCommentedOnMyRecipes(page: number = 1, limit: number
       .select('id')
       .eq('author_id', user.id);
 
-    if (recipesError) {
-      console.error('Error fetching user recipes:', recipesError);
-      return { success: false, error: 'Failed to fetch user recipes' };
+    if (recipesError) {      return { success: false, error: 'Failed to fetch user recipes' };
     }
 
     const recipeIds = userRecipes?.map(r => r.id) || [];
@@ -216,9 +204,7 @@ export async function getWhoCommentedOnMyRecipes(page: number = 1, limit: number
 
     const { data: comments, error: commentsError, count } = await query.range(offset, offset + validatedLimit - 1);
 
-    if (commentsError) {
-      console.error('Error fetching comments on my recipes:', commentsError);
-      return { success: false, error: 'Failed to fetch comments' };
+    if (commentsError) {      return { success: false, error: 'Failed to fetch comments' };
     }
 
     // Transform data - fetch profile and recipe data separately
@@ -233,9 +219,7 @@ export async function getWhoCommentedOnMyRecipes(page: number = 1, limit: number
         .select('id, username, display_name, avatar_key')
         .in('id', userIds);
       
-      if (profilesError) {
-        console.error('Error fetching commenter profiles:', profilesError);
-        return { success: false, error: 'Failed to fetch commenter profiles' };
+      if (profilesError) {        return { success: false, error: 'Failed to fetch commenter profiles' };
       }
       
       // Fetch recipe data for all commented recipes
@@ -244,9 +228,7 @@ export async function getWhoCommentedOnMyRecipes(page: number = 1, limit: number
         .select('id, title, slug')
         .in('id', recipeIds);
       
-      if (recipesError) {
-        console.error('Error fetching commented recipes:', recipesError);
-        return { success: false, error: 'Failed to fetch commented recipes' };
+      if (recipesError) {        return { success: false, error: 'Failed to fetch commented recipes' };
       }
       
       // Create maps for quick lookup
@@ -284,9 +266,7 @@ export async function getWhoCommentedOnMyRecipes(page: number = 1, limit: number
       limit: validatedLimit,
     };
 
-  } catch (error) {
-    console.error('Unexpected error fetching comments on my recipes:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -307,9 +287,7 @@ export async function getTotalLikesOnMyRecipes() {
       .select('like_count')
       .eq('author_id', user.id);
 
-    if (recipesError) {
-      console.error('Error fetching recipe likes:', recipesError);
-      return { success: false, error: 'Failed to fetch recipe likes' };
+    if (recipesError) {      return { success: false, error: 'Failed to fetch recipe likes' };
     }
 
     const totalLikes = recipes?.reduce((sum, recipe) => sum + (recipe.like_count || 0), 0) || 0;
@@ -319,9 +297,7 @@ export async function getTotalLikesOnMyRecipes() {
       totalLikes,
     };
 
-  } catch (error) {
-    console.error('Unexpected error calculating total likes:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }
 
@@ -342,9 +318,7 @@ export async function getTotalCommentsOnMyRecipes() {
       .select('id')
       .eq('author_id', user.id);
 
-    if (recipesError) {
-      console.error('Error fetching user recipes:', recipesError);
-      return { success: false, error: 'Failed to fetch user recipes' };
+    if (recipesError) {      return { success: false, error: 'Failed to fetch user recipes' };
     }
 
     const recipeIds = userRecipes?.map(r => r.id) || [];
@@ -361,9 +335,7 @@ export async function getTotalCommentsOnMyRecipes() {
       .select('*', { count: 'exact', head: true })
       .in('recipe_id', recipeIds);
 
-    if (commentsError) {
-      console.error('Error counting comments:', commentsError);
-      return { success: false, error: 'Failed to count comments' };
+    if (commentsError) {      return { success: false, error: 'Failed to count comments' };
     }
 
     return {
@@ -371,8 +343,6 @@ export async function getTotalCommentsOnMyRecipes() {
       totalComments: count || 0,
     };
 
-  } catch (error) {
-    console.error('Unexpected error counting comments:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+  } catch (error) {    return { success: false, error: 'An unexpected error occurred' };
   }
 }

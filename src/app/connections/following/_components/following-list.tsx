@@ -73,13 +73,9 @@ export function FollowingList({ userId }: FollowingListProps) {
       if (result.success) {
         // Remove from the list
         setFollowing(prev => prev.filter(f => f.id !== followingId));
-      } else {
-        console.error('Failed to unfollow:', result.error);
-        setUnfollowingStates(prev => ({ ...prev, [followingId]: false }));
+      } else {        setUnfollowingStates(prev => ({ ...prev, [followingId]: false }));
       }
-    } catch (error) {
-      console.error('Error unfollowing:', error);
-      setUnfollowingStates(prev => ({ ...prev, [followingId]: false }));
+    } catch (error) {      setUnfollowingStates(prev => ({ ...prev, [followingId]: false }));
     }
   };
 
